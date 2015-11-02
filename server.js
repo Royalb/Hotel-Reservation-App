@@ -24,14 +24,14 @@ connection.connect(function(err) {
 
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }))
+
 
 
 
 app.post('/login',function(req,res) {
     console.log("Username:",req.body.Username);
     var Username = req.body.Username;
-    var result = { "Data":""}
+    var result = { "Data":"", "Success":"false"}
         connection.query("(SELECT Cust_username AS Username,PASSWORD FROM CUSTOMER WHERE Cust_username=? AND PASSWORD=? LIMIT 1)UNION(SELECT Man_username AS Username,PASSWORD FROM MANAGEMENT WHERE Man_username=? AND PASSWORD=? LIMIT 1)",
                 [req.body.Username,req.body.Password,req.body.Username,req.body.Password], function(err, rows, fields){
                     if(err) {
@@ -40,10 +40,12 @@ app.post('/login',function(req,res) {
                     if(rows.length != 0){
                         console.log("rows returned:",rows);
                         result["Data"] = "Successfully logged in.";
+                        result["Success"] = "true";
                         res.json(result);
                     }else{
                         console.log("Username or Password in incorrect", rows);
-                        // result["Data"] = "Username or password is incorrect.";
+                        result["Data"] = "Username or password is incorrect.";
+
                         res.json(result);
                     }
                 });
@@ -59,7 +61,7 @@ app.post('/register',function(req,res) {
     var Password = req.body.Password;
     var PasswordConfirm = req.body.PasswordConfirm;
     var Email = req.body.Email;
-    var result = { "Data":""}
+    var result = { "Data":"", "Success":false};
         connection.query("SELECT * FROM CUSTOMER WHERE Cust_username=? LIMIT 1",
                 [req.body.Username], function(err, rows, fields){
                     if(err) {
@@ -75,20 +77,18 @@ app.post('/register',function(req,res) {
                                 [Email,Username,Password], function(err, rows, fields){
                                     if(err) {
                                         console.error('bad query: ' + err.stack);
-                                        result["Data"] = "Registeration failled";
+                                        //want to set err to send here back but cant
                                     } else {
                                         console.log("registered done");
-                                        result["Data"] = "Registered Successfully";
                                     }
                                 });
+
                         result["Data"] = "Probably Registered Successfully";
+                        result["Success"] = true;
                         res.json(result);
                     }
                 });
-
-
     console.log("resule: ", result);
-
 });
 
 

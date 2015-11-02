@@ -25,19 +25,31 @@ var app = angular.module('FancyHotel',['ngRoute'])
         .when('/paymentinfo', {
             templateUrl: 'paymentinfo.html',
         })
+        .when('/viewreview', {
+            templateUrl: 'viewreview.html',
+        })
+        .when('/viewreview', {
+            templateUrl: 'viewreview.html',
+        })
+        .when('/givereview', {
+            templateUrl: 'givereview.html',
+        })
         .otherwise({ redirectTo: '/' }
         );
     $locationProvider.html5Mode(true);
 });
 
+//controller definitions -------------------------------------------------------
 app.controller('LoginCtrl',['$scope','$http', LoginCtrl]);
 app.controller('FunctionalityCtrl',['$scope','$http', FunctionalityCtrl]);
 app.controller('RegistrationCtrl',['$scope','$http', RegistrationCtrl]);
 app.controller('SearchroomsCtrl',['$scope','$http','availableroomsService', SearchroomsCtrl]);
 app.controller('MakereservationCtrl',['$scope','$http','availableroomsService', MakereservationCtrl]);
 app.controller('PaymentinfoCtrl',['$scope','$http','availableroomsService', PaymentinfoCtrl]);
+app.controller('ViewreviewCtrl',['$scope','$http','availableroomsService', ViewreviewCtrl]);
+app.controller('GivereviewCtrl',['$scope','$http','availableroomsService', GivereviewCtrl]);
 
-
+// factories -------------------------------------------------------------------
 app.factory('availableroomsService', function () {
         var roomResponse = {};
 
@@ -52,10 +64,13 @@ app.factory('availableroomsService', function () {
         };
     });
 
+
+// controllers -----------------------------------------------------------------
 function AppCtrl($scope, $http, $location) {
+    //curUser is how we track who is logged in ie change this to be someone else
     $scope.curUser='';
     console.log("Hello world from controller");
-    $scope.changecurUser = function(newVal) {
+    $scope.setcurUser = function(newVal) {
         $scope.curUser=newVal;
     };
     $scope.loginSucess = function() {
@@ -74,6 +89,12 @@ function AppCtrl($scope, $http, $location) {
     $scope.showRooms = function() {
         $location.path("/makereservation");
     }
+    $scope.showReviews = function() {
+        $location.path("/viewreview");
+    }
+    $scope.addReviews = function() {
+        $location.path("/givereview");
+    }
 
 
 }
@@ -86,18 +107,13 @@ function LoginCtrl($scope, $http) {
                 console.log(res);
                 console.log("curUser: ", $scope.$parent.curUser);
 
-                $scope.changecurUser($scope.user.Username);
+                $scope.setcurUser($scope.user.Username);
 
                 console.log("curUser: ", $scope.$parent.curUser);
                 $scope.loginResponse = res["Data"];
-                if(res["Data"]){
+                if(res["Success"] == "true"){
                     $scope.loginSucess();
-
-                } else {
-                    $scope.loginResponse = "Username or Password Incorrect."
-                    console.log("controller u no logedin ");
                 }
-
             }
         });
     };
@@ -118,6 +134,7 @@ function RegistrationCtrl($scope, $http) {
     };
 
     $scope.registerUser = function() {
+        console.log("Before Checks:",$scope.user);
         if ($scope.user.Username.charAt(0) != 'C' || $scope.user.Username.charAt(1) == '') {
             $scope.registerResponse = "Username must start with a 'C' and be more than one letter";
             return;
@@ -126,7 +143,7 @@ function RegistrationCtrl($scope, $http) {
             $scope.registerResponse = "Passwords are Different.";
             return;
         }
-        if ($scope.user.Email == '' || $scope.user.Password == '') {
+        if (($scope.user.Email == "" )|| ($scope.user.Email === undefined ) || ($scope.user.Password == "")) {
             $scope.registerResponse = "All Feilds are Required!";
             return;
         }
@@ -136,16 +153,14 @@ function RegistrationCtrl($scope, $http) {
                 console.log(res);
                 console.log("curUser: ", $scope.$parent.curUser);
 
-                // $scope.changecurUser($scope.user.Username);
+                $scope.setcurUser($scope.user.Username);
 
                 console.log("curUser: ", $scope.$parent.curUser);
                 $scope.registerResponse = res["Data"];
+                if(res["Success"]){
+                    $scope.loginSucess();
 
-
-                // if(res["Data"]){
-                //     $scope.loginSucess();
-                //
-                // }
+                }
 
             }
         });
@@ -156,7 +171,7 @@ function SearchroomsCtrl($scope, $http, availableroomsService) {
     $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
     $scope.curSelectedLoc = $scope.locations[0];
     $scope.startdate = new Date("2015,1,1");
-    $scope.enddate = new Date("2015,2,1");
+    $scope.enddate = new Date("2015,1,2");
     $scope.search = function () {
     var body = {"Startdate":$scope.startdate.toISOString().substr(0,9)
                     ,"Enddate":$scope.enddate.toISOString().substr(0,9)
@@ -202,6 +217,27 @@ function MakereservationCtrl($scope, $http) {
     }
 
 }
+
+
 function PaymentinfoCtrl($scope, $http) {
     console.log('You made it to Paymentinfo. Hello!');
+}
+
+
+function ViewreviewCtrl($scope, $http) {
+    $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
+    $scope.curSelectedLoc = $scope.locations[0];
+    $scope.reviewlist = [{rating:"good",comment:"hello to the world ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ"},{rating:"zaBestEvaar",comment:"¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯"}]
+
+    console.log('You made it to Viewreview. Hello!');
+}
+
+
+function GivereviewCtrl($scope, $http) {
+    $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
+    $scope.curSelectedLoc = $scope.locations[0];
+    $scope.ratings = [{name:'Excellent'},{name:'Good'},{name:'Bad'},{name:'Very Bad'},{name:'Neutral'}];
+    $scope.curSelectedRat = $scope.ratings[0];
+    console.log('You made it to givereview. Hello!');
+    $scope.comment = "";
 }
