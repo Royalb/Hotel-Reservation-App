@@ -1,0 +1,22 @@
+Current Dependencies:
+nodejs			
+npm				
+
+sudo apt-get install nodejs npm
+--------------------------------------------
+Modules:
+Express
+body-parser
+my-sql
+
+npm install express body-parser my-sql
+--------------------------------------------
+----------------------------------------------
+
+To start server:
+
+node server.js
+
+
+**Database features only work when connected to GTwifi or GTother**
+

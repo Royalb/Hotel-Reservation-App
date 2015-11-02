@@ -1,0 +1,47 @@
+<html>
+    <script src="js/checklist-model.js"></script>
+    <body>
+        <div class="main-container container-fluid text-center" ng-controller="MakereservationCtrl">
+            <h1 class="bg-info">Make a Reservation</h1>
+            <table class="table">
+			<thead>
+				<tr>
+					<th>Room number</th>
+					<th>Room Category</th>
+					<th># Persons Allowed</th>
+					<th>Cost per day</th>
+					<th>Cost of extra bed per day</th>
+					<th>select room</th>
+				</tr>
+			</thead>
+			<tbody>
+                <!-- <tr>
+                    <td><input class="form-control" ng-model="room.number"></td>
+                    <td><input class="form-control" ng-model="room.category"></td>
+                    <td><input class="form-control" ng-model="room.pallowed"></td>
+                    <td><input class="form-control" ng-model="room.costperday"></td>
+                    <td><input class="form-control" ng-model="room.costextrabed"></td>
+                    <td><input type="checkbox" checklist-value="room.number"></input></td>
+                </tr> -->
+				<tr ng-repeat="room in roomlist">
+					<td>{{room.number}}</td>
+					<td>{{room.category}}</td>
+					<td>{{room.pallowed}}</td>
+					<td>{{room.costperday}}</td>
+					<td>{{room.costextrabed}}</td>
+					<!-- <td><input type="checkbox" checklist-model="user.roles" checklist-value="room.number"></input></td> -->
+					<td><input type="checkbox" ng-model="room.selected"></input></td>
+				</tr>
+			</tbody>
+		</table>
+
+
+        <div class="col-sm-7 "></div>
+            <div class=" col-sm-5 text-right ">
+                <button type="submit" class="btn btn-default" ng-click="checkDetails()">Check Details</button>
+            </div>
+        </div>
+
+        </div>
+    </body>
+</html>

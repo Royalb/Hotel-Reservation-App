@@ -1,0 +1,20 @@
+<html>
+    <body>
+        <div class="login-container container-fluid text-center" ng-controller="LoginCtrl">
+            <h1 class="bg-info">Login</h1>
+            <form>
+                <div class='form-group'>
+                    {{loginResponse}}
+                    <input class="form-control" placeholder="Username" ng-model="user.Username">
+                </div>
+                <div class='form-group'>
+                    <input type="password" class="form-control" placeholder="Password" ng-model="user.Password"></td>
+                </div>
+                    <button class="btn btn-primary" ng-click="loginUser()">Login</button>
+                <div class='form-group'>
+                </div>
+            </form>
+            <a class="row"  ng-click="addUser()">New User? Create Account<a>
+        </div>
+    </body>
+</html>
