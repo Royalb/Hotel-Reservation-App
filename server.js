@@ -125,7 +125,7 @@ app.post('/searchrooms',function(req,res) {
 
 });
 
-
+// ThiS is STILL VERY BROKEN GIVES SQL ERRORS
 app.post('/givereview',function(req,res) {
     var comment = req.body.Comment;
     var rating = req.body.Rating;

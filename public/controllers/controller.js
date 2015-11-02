@@ -232,7 +232,7 @@ function ViewreviewCtrl($scope, $http) {
     console.log('You made it to Viewreview. Hello!');
 }
 
-
+//STill Broken GIVES SQL ERRORs
 function GivereviewCtrl($scope, $http) {
     $scope.comment = 'nothings';
     $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
