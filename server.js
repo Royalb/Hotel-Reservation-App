@@ -126,6 +126,40 @@ app.post('/searchrooms',function(req,res) {
 });
 
 
+app.post('/givereview',function(req,res) {
+    var comment = req.body.Comment;
+    var rating = req.body.Rating;
+    var location = req.body.Location;
+    var customer = req.body.Customer;
+
+    console.log("comment:",comment);
+    console.log("rating:",rating);
+    console.log("location:",location);
+    console.log("customer:",customer);
+
+    res.json(req.body);
+
+    connection.query("INSERT INTO HOTEL_REVIEW (Review_no,Location,Rating,Comment,Customer) VALUES (NULL,?,?,?,?)",
+            [req.body.Location,req.body.Rating,req.body.Comment,req.body.Customer], function(err, rows, fields){
+                if(err) {
+                    console.error('bad query: ' + err.stack);
+                }
+                if(rows.length != 0){
+                    console.log(rows);
+                    result["Data"] = "Successfully logged in.";
+                    res.json(result);
+                }else{
+                    console.log("Username or Password in incorrect", rows);
+                    result["Data"] = "Email or password is incorrect.";
+                    res.json(result);
+                }
+            });
+
+    console.log("resule: ", result);
+
+});
+
+
 
 
 

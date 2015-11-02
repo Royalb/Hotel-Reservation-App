@@ -234,10 +234,20 @@ function ViewreviewCtrl($scope, $http) {
 
 
 function GivereviewCtrl($scope, $http) {
+    $scope.comment = 'nothings';
     $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
     $scope.curSelectedLoc = $scope.locations[0];
     $scope.ratings = [{name:'Excellent'},{name:'Good'},{name:'Bad'},{name:'Very Bad'},{name:'Neutral'}];
     $scope.curSelectedRat = $scope.ratings[0];
     console.log('You made it to givereview. Hello!');
-    $scope.comment = "";
+    var body = {"Location":$scope.curSelectedLoc, "Rating":$scope.curSelectedRat, "Comment":$scope.comment, "Customer":$scope.curUser};
+    $scope.submit = function (argument) {
+        $http.post('/givereview',body).success(function(res) {
+            if (res) {
+                console.log("Recieved something");
+                $scope.showReviews();
+            }
+        });
+
+    }
 }
