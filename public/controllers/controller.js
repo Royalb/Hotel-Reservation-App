@@ -132,11 +132,12 @@ function RegistrationCtrl($scope, $http) {
         PasswordConfirm: "",
         Email:""
     };
-
+    // TODO: check for last 4 chars in username are numbers somewhere
     $scope.registerUser = function() {
         console.log("Before Checks:",$scope.user);
-        if ($scope.user.Username.charAt(0) != 'C' || $scope.user.Username.charAt(1) == '') {
-            $scope.registerResponse = "Username must start with a 'C' and be more than one letter";
+        if ($scope.user.Username.charAt(0) != 'C' || $scope.user.Username.charAt(1) == ''
+                || $scope.user.Username.length != 5) {
+            $scope.registerResponse = "Username must start with a 'C' and be followed by 4 numbers";
             return;
         }
         if ($scope.user.Password != $scope.user.PasswordConfirm) {
@@ -227,25 +228,50 @@ function PaymentinfoCtrl($scope, $http) {
 function ViewreviewCtrl($scope, $http) {
     $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
     $scope.curSelectedLoc = $scope.locations[0];
-    $scope.reviewlist = [{rating:"good",comment:"hello to the world ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ"},{rating:"zaBestEvaar",comment:"¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯"}]
+    // $scope.reviewlist = [{rating:"good",comment:"hello to the world ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ"},{rating:"zaBestEvaar",comment:"¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯"}]
+    $scope.retrive = function (argument) {
+        var body = {"Location":$scope.curSelectedLoc.name};
+        $http.post('/viewreview',body).success(function(res) {
+            if (res) {
+                console.log("Recieved something");
+                console.log("res:", res);
 
-    console.log('You made it to Viewreview. Hello!');
+                    $scope.response = 'Review left successfully';
+                    $scope.reviewlist = res;
+
+
+
+
+            }
+        });
+
+    }
 }
 
 //STill Broken GIVES SQL ERRORs
 function GivereviewCtrl($scope, $http) {
-    $scope.comment = 'nothings';
+    $scope.comment = '';
     $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
     $scope.curSelectedLoc = $scope.locations[0];
     $scope.ratings = [{name:'Excellent'},{name:'Good'},{name:'Bad'},{name:'Very Bad'},{name:'Neutral'}];
     $scope.curSelectedRat = $scope.ratings[0];
     console.log('You made it to givereview. Hello!');
-    var body = {"Location":$scope.curSelectedLoc, "Rating":$scope.curSelectedRat, "Comment":$scope.comment, "Customer":$scope.curUser};
     $scope.submit = function (argument) {
+        // this if statment might not be working.
+        if ($scope.comment.length > 5000) {
+            $scope.response = "Comment must be less that 5000 characters currently:" + $scope.comment.length
+        }
+        var body = {"Location":$scope.curSelectedLoc.name, "Rating":$scope.curSelectedRat.name, "Comment":$scope.comment, "Customer":$scope.curUser};
         $http.post('/givereview',body).success(function(res) {
             if (res) {
                 console.log("Recieved something");
-                $scope.showReviews();
+                if (res["Success"]) {
+                    $scope.response = 'Review left successfully';
+                    $scope.showReviews();
+                } else {
+                    $scope.response = 'Something went wrong.';
+
+                }
             }
         });
 

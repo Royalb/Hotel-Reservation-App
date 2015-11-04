@@ -9,7 +9,7 @@ var connection = mysql.createConnection({
     database : 'cs4400_Group_44'
 });
 
-
+// connect to sql database
 connection.connect(function(err) {
     if (err) {
         console.error('error connecting: ' + err.stack);
@@ -21,13 +21,13 @@ connection.connect(function(err) {
 
 
 
-
+//set express and bodyParser setting
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json());
 
 
 
-
+// login
 app.post('/login',function(req,res) {
     console.log("Username:",req.body.Username);
     var Username = req.body.Username;
@@ -102,7 +102,6 @@ app.post('/searchrooms',function(req,res) {
     console.log("startdate:",enddate);
     console.log("enddate:",startdate);
 
-    res.json(req.body);
     // TODO: request room information from server
     // TODO: send properly formated json to res from query
     // connection.query("SELECT * FROM CUSTOMER WHERE Cust_username=? AND Password=? LIMIT 1",
@@ -127,42 +126,51 @@ app.post('/searchrooms',function(req,res) {
 
 // ThiS is STILL VERY BROKEN GIVES SQL ERRORS
 app.post('/givereview',function(req,res) {
-    var comment = req.body.Comment;
-    var rating = req.body.Rating;
-    var location = req.body.Location;
-    var customer = req.body.Customer;
+    var result = { "Data":"", "Success":false};
+    console.log("comment:",req.body.Comment);
+    console.log("rating:",req.body.Rating);
+    console.log("location:",req.body.Location);
+    console.log("customer:",req.body.Customer);
 
-    console.log("comment:",comment);
-    console.log("rating:",rating);
-    console.log("location:",location);
-    console.log("customer:",customer);
-
-    res.json(req.body);
-
-    connection.query("INSERT INTO HOTEL_REVIEW (Review_no,Location,Rating,Comment,Customer) VALUES (NULL,?,?,?,?)",
+    connection.query("INSERT INTO HOTEL_REVIEW (Review_no,Location,Rating,Comment,Customer) VALUES ('NULL',?,?,?,?)",
             [req.body.Location,req.body.Rating,req.body.Comment,req.body.Customer], function(err, rows, fields){
                 if(err) {
                     console.error('bad query: ' + err.stack);
-                }
-                if(rows.length != 0){
-                    console.log(rows);
-                    result["Data"] = "Successfully logged in.";
+                    result["Data"] = "REVIEW CREATION FAILURE";
                     res.json(result);
-                }else{
-                    console.log("Username or Password in incorrect", rows);
-                    result["Data"] = "Email or password is incorrect.";
+                } else {
+                    result["Data"] = "Successfully logged in.";
+                    result["Success"] = true;
+                    console.log("Review Creation success!", rows);
+                    console.log("resule: ", result);
                     res.json(result);
                 }
             });
+});
+app.post('/viewreview',function(req,res) {
+    var result = { "Data":"", "Success":false};
+    console.log("location:",req.body.Location);
 
-    console.log("resule: ", result);
-
+    connection.query("SELECT Rating, Comment  FROM HOTEL_REVIEW WHERE Location=?",
+            [req.body.Location], function(err, rows, fields){
+                if(err) {
+                    console.error('bad query: ' + err.stack);
+                    result["Data"] = "REVIEW RETRIVAL FAILURE";
+                    res.json(result);
+                } else {
+                    result["Data"] = "REVIEWS RECIEVED";
+                    result["Success"] = true;
+                    console.log("REVIEWS RECIEVED!", rows);
+                    console.log("resule: ", result);
+                    res.json(rows);
+                }
+            });
 });
 
 
 
 
-
+// does not do anything probably remove this.
 app.get('/Mfunctionality', function(req,res) {
     res.sendFile(__dirname + '/public/index.html');
 });
