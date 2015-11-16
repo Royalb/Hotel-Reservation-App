@@ -25,14 +25,14 @@
             </table>
             <table class="table table-responsive  table-striped">
 			<thead>
-				<tr>
+				<tr class="main-container">
 					<th style="width:20%" >Rating</th>
 					<th>Comment</th>
 				</tr>
 			</thead>
 			<tbody>
 
-				<tr ng-repeat="review in reviewlist">
+				<tr class="main-container" ng-repeat="review in reviewlist">
 					<td>{{review.Rating}}</td>
 					<td>{{review.Comment}}</td>
 				</tr>

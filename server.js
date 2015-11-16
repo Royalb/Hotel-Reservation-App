@@ -124,7 +124,7 @@ app.post('/searchrooms',function(req,res) {
 
 });
 
-// ThiS is STILL VERY BROKEN GIVES SQL ERRORS
+
 app.post('/givereview',function(req,res) {
     var result = { "Data":"", "Success":false};
     console.log("comment:",req.body.Comment);
@@ -147,6 +147,7 @@ app.post('/givereview',function(req,res) {
                 }
             });
 });
+
 app.post('/viewreview',function(req,res) {
     var result = { "Data":"", "Success":false};
     console.log("location:",req.body.Location);
@@ -158,14 +159,115 @@ app.post('/viewreview',function(req,res) {
                     result["Data"] = "REVIEW RETRIVAL FAILURE";
                     res.json(result);
                 } else {
-                    result["Data"] = "REVIEWS RECIEVED";
-                    result["Success"] = true;
                     console.log("REVIEWS RECIEVED!", rows);
                     console.log("resule: ", result);
                     res.json(rows);
                 }
             });
 });
+
+
+//----------------------------------tobedone------------------------------------
+//------------------------------------------------------------------------------
+app.post('/reservationconformation',function(req,res) {
+    var result = { "Data":"", "Success":false}; //if not returning rows use this
+    //var somevar1 = req.body.somevar;
+    //var somevar2 = req.body.somevar;
+
+    //some sql query. question marks are replaced [somevar1,somevar2] respectively
+    connection.query("SELECT something  FROM somewhere WHERE firstvar=? AND secondvar=?",
+            [somevar1,somevar2], function(err, rows, fields){
+                if(err) {
+                    //Data set and returned on sql error
+                    console.error('bad query: ' + err.stack);
+                    result["Data"] = "FAILURE";
+                    res.json(result);
+                } else {
+                    //return "rows" if getting database data
+                    //if no data is to be returned, return result with "Data"set as "success!" or something
+                    //
+                    console.log("RECIEVED!", rows);
+                    res.json(rows);
+                }
+            });
+});
+
+
+//paymentinfo related-----------------------------------------------------------
+app.post('/savecard',function(req,res) {
+    var result = { "Data":"", "Success":false}; //if not returning rows use this
+    //var somevar1 = req.body.somevar;
+    //var somevar2 = req.body.somevar;
+
+    //some sql query question marks are replaced [somevar1,somevar2] respectively
+    connection.query("SELECT something  FROM somewhere WHERE firstvar=? AND secondvar=?",
+            [somevar1,somevar2], function(err, rows, fields){
+                if(err) {
+                    //Data set and returned on sql error
+                    console.error('bad query: ' + err.stack);
+                    result["Data"] = "FAILURE";
+                    res.json(result);
+                } else {
+                    //return "rows" if getting database data
+                    //if no data is to be returned, return result with "Data"set as "success!" or something
+                    //
+                    result["Success"] = true;
+                    console.log("RECIEVED!", rows);
+                    res.json(result);
+                }
+            });
+});
+
+app.post('/deletecard',function(req,res) {
+    var result = { "Data":"", "Success":false}; //if not returning rows use this
+    //var somevar1 = req.body.somevar;
+    //var somevar2 = req.body.somevar;
+
+    //some sql query question marks are replaced [somevar1,somevar2] respectively
+    connection.query("SELECT something  FROM somewhere WHERE firstvar=? AND secondvar=?",
+            [somevar1,somevar2], function(err, rows, fields){
+                if(err) {
+                    //Data set and returned on sql error
+                    console.error('bad query: ' + err.stack);
+                    //result["Data"] = "FAILURE";
+                    res.json(result);
+                } else {
+                    //return "rows" if getting database data
+                    //if no data is to be returned, return result with "Data"set as "success!" or something
+                    result["Success"] = true;
+                    console.log("RECIEVED!", rows);
+                    res.json(result);
+                }
+            });
+});
+
+//  this may get called on multiple pages to populate card info dropdowns
+app.post('/getcardinfo',function(req,res) {
+    var result = { "Data":"", "Success":false}; //if not returning rows use this
+    //var somevar1 = req.body.somevar;
+    //var somevar2 = req.body.somevar;
+
+    //some sql query question marks are replaced [somevar1,somevar2] respectively
+    connection.query("SELECT something  FROM somewhere WHERE firstvar=? AND secondvar=?",
+            [somevar1,somevar2], function(err, rows, fields){
+                if(err) {
+                    //Data set and returned on sql error
+                    console.error('bad query: ' + err.stack);
+                    //result["Data"] = "FAILURE";
+                    res.json(result);
+                } else {
+                    //return "rows" if getting database data
+                    //if no data is to be returned, return result with "Data"set as "success!" or something
+                    //
+                    console.log("RECIEVED!", rows);
+                    res.json(rows);
+                }
+            });
+});
+
+
+
+
 
 
 

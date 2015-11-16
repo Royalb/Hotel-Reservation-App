@@ -1,4 +1,3 @@
-
 var app = angular.module('FancyHotel',['ngRoute'])
 .controller('AppCtrl',['$scope', '$http', '$location', AppCtrl])
 
@@ -28,11 +27,26 @@ var app = angular.module('FancyHotel',['ngRoute'])
         .when('/viewreview', {
             templateUrl: 'viewreview.html',
         })
-        .when('/viewreview', {
-            templateUrl: 'viewreview.html',
-        })
         .when('/givereview', {
             templateUrl: 'givereview.html',
+        })
+        .when('/cancelreservation', {
+            templateUrl: 'cancelreservation.html',
+        })
+        .when('/Mpopularroom', {
+            templateUrl: 'Mpopularroom.html',
+        })
+        .when('/Mreserationreport', {
+            templateUrl: 'Mreserationreport.html',
+        })
+        .when('/Mrevenuereport', {
+            templateUrl: 'Mrevenuereport.html',
+        })
+        .when('/reservationconformation', {
+            templateUrl: 'reservationconformation.html',
+        })
+        .when('/updatereservation', {
+            templateUrl: 'updatereservation.html',
         })
         .otherwise({ redirectTo: '/' }
         );
@@ -46,8 +60,15 @@ app.controller('RegistrationCtrl',['$scope','$http', RegistrationCtrl]);
 app.controller('SearchroomsCtrl',['$scope','$http','availableroomsService', SearchroomsCtrl]);
 app.controller('MakereservationCtrl',['$scope','$http','availableroomsService', MakereservationCtrl]);
 app.controller('PaymentinfoCtrl',['$scope','$http','availableroomsService', PaymentinfoCtrl]);
-app.controller('ViewreviewCtrl',['$scope','$http','availableroomsService', ViewreviewCtrl]);
-app.controller('GivereviewCtrl',['$scope','$http','availableroomsService', GivereviewCtrl]);
+app.controller('ViewreviewCtrl',['$scope','$http', ViewreviewCtrl]);
+app.controller('GivereviewCtrl',['$scope','$http', GivereviewCtrl]);
+
+app.controller('CancelreservationCtrl',['$scope','$http', CancelreservationCtrl]);
+app.controller('MpopularroomCtrl',['$scope','$http', MpopularroomCtrl]);
+app.controller('MreserationreportCtrl',['$scope','$http', MreserationreportCtrl]);
+app.controller('MrevenuereportCtrl',['$scope','$http', MrevenuereportCtrl]);
+app.controller('ReservationconformationCtrl',['$scope','$http', ReservationconformationCtrl]);
+app.controller('UpdatereservationCtrl',['$scope','$http', UpdatereservationCtrl]);
 
 // factories -------------------------------------------------------------------
 app.factory('availableroomsService', function () {
@@ -167,6 +188,13 @@ function RegistrationCtrl($scope, $http) {
         });
     };
 }
+
+
+
+/* the responce from the sql database with the available rooms will be saved
+    in the variable "roomResponse" in the "availableroomsService" service using
+    the factories getter and setter methods. This can then be retrieved from the
+    MakereservationCtrl method.*/
 function SearchroomsCtrl($scope, $http, availableroomsService) {
     console.log('You made it to SearchroomsCtrl. Hello!');
     $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
@@ -191,7 +219,7 @@ function SearchroomsCtrl($scope, $http, availableroomsService) {
 }
 
 
-function MakereservationCtrl($scope, $http) {
+function MakereservationCtrl($scope, $http, $availableroomsService) {
     console.log('You made it to Makereservation. Hello!');
     // TODO: set room list from getroomResponse
     // TODO: set location from getroomResponse to send with push
@@ -220,9 +248,6 @@ function MakereservationCtrl($scope, $http) {
 }
 
 
-function PaymentinfoCtrl($scope, $http) {
-    console.log('You made it to Paymentinfo. Hello!');
-}
 
 
 function ViewreviewCtrl($scope, $http) {
@@ -238,17 +263,14 @@ function ViewreviewCtrl($scope, $http) {
 
                     $scope.response = 'Review left successfully';
                     $scope.reviewlist = res;
-
-
-
-
             }
         });
 
     }
 }
 
-//STill Broken GIVES SQL ERRORs
+
+
 function GivereviewCtrl($scope, $http) {
     $scope.comment = '';
     $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
@@ -276,4 +298,76 @@ function GivereviewCtrl($scope, $http) {
         });
 
     }
+}
+
+// incomplete-------------------------------------------------------------------
+
+// TODO: implement savecard
+// TODO: implement deletecard
+// TODO: retrive payment info
+function PaymentinfoCtrl($scope, $http) {
+    console.log('You made it to Paymentinfo. Hello!');
+    var body = {};
+    // post that sends data(what's in body) to sqlserver
+    $http.post('/savecard',body).success(function(res) {
+        if (res) {
+            console.log("Recieved something");
+            if (res["Success"]) {
+                $scope.response = 'Card Saved successfully';
+
+            } else {
+                $scope.response = 'Something went wrong.';
+            }
+        }
+    });
+    $http.post('/deletecard',body).success(function(res) {
+        if (res) {
+            console.log("Recieved something");
+            if (res["Success"]) {
+                $scope.response = 'Card deleted successfully';
+            } else {
+                $scope.response = 'Something went wrong.';
+
+            }
+        }
+    });
+    //a post that gets info
+    $http.post('/getcardinfo',body).success(function(res) {
+        if (res) {
+            console.log("Recieved something");
+            console.log("res:", res);
+
+                $scope.cardlist = res;
+        }
+    });
+
+}
+
+function CancelreservationCtrl($scope, $http) {
+    console.log('You made it to Cancelreservation. Hello!');
+}
+
+
+function MpopularroomCtrl($scope, $http) {
+    console.log('You made it to Mpopularroom. Hello!');
+}
+
+
+function MreserationreportCtrl($scope, $http) {
+    console.log('You made it to Mreserationreport. Hello!');
+}
+
+
+function MrevenuereportCtrl($scope, $http) {
+    console.log('You made it to Mrevenuereport. Hello!');
+}
+
+
+function ReservationconformationCtrl($scope, $http) {
+    console.log('You made it to Mrevenuereport. Hello!');
+}
+
+
+function UpdatereservationCtrl($scope, $http) {
+    console.log('You made it to updatereservation. Hello!');
 }
