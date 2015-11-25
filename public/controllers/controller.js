@@ -197,18 +197,26 @@ function RegistrationCtrl($scope, $http) {
     MakereservationCtrl method.*/
 function SearchroomsCtrl($scope, $http, availableroomsService) {
     console.log('You made it to SearchroomsCtrl. Hello!');
+    $scope.curdate = new Date(new Date().setHours(0,0,0,0));
     $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
     $scope.curSelectedLoc = $scope.locations[0];
     $scope.startdate = new Date("2015,1,1");
     $scope.enddate = new Date("2015,1,2");
     $scope.search = function () {
-    var body = {"Startdate":$scope.startdate.toISOString().substr(0,9)
+        if ($scope.startdate.valueOf() >= $scope.enddate.valueOf()) {
+            $scope.message = " Please choose end date after stardate.";
+            return;
+        }
+        if ($scope.startdate < $scope.curdate) {
+            $scope.message = "Can not choose dates in the past";
+            return;
+        }
+        var body = {"Startdate":$scope.startdate.toISOString().substr(0,9)
                     ,"Enddate":$scope.enddate.toISOString().substr(0,9)
                     ,"Location":$scope.curSelectedLoc.name};
 
         $http.post('/searchrooms', body).success(function(res) {
             if (res) {
-                // TODO: save responce properly formated from sql to saveroomResponse
                 console.log("Search worked");
                 availableroomsService.saveroomResponse(res);
                 console.log("service response:",availableroomsService.getroomResponse());
