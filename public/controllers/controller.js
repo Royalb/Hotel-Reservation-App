@@ -53,6 +53,9 @@ var app = angular.module('FancyHotel',['ngRoute'])
     $locationProvider.html5Mode(true);
 });
 
+
+var testdata;
+
 //controller definitions -------------------------------------------------------
 app.controller('LoginCtrl',['$scope','$http', LoginCtrl]);
 app.controller('FunctionalityCtrl',['$scope','$http', FunctionalityCtrl]);
@@ -62,7 +65,6 @@ app.controller('MakereservationCtrl',['$scope','$http','availableroomsService', 
 app.controller('PaymentinfoCtrl',['$scope','$http','availableroomsService', PaymentinfoCtrl]);
 app.controller('ViewreviewCtrl',['$scope','$http', ViewreviewCtrl]);
 app.controller('GivereviewCtrl',['$scope','$http', GivereviewCtrl]);
-
 app.controller('CancelreservationCtrl',['$scope','$http', CancelreservationCtrl]);
 app.controller('MpopularroomCtrl',['$scope','$http', MpopularroomCtrl]);
 app.controller('MreserationreportCtrl',['$scope','$http', MreserationreportCtrl]);
@@ -77,7 +79,7 @@ app.factory('availableroomsService', function () {
         return {
             saveroomResponse:function (data) {
                 roomResponse = data;
-                console.log(data);
+                console.log(roomResponse);
             },
             getroomResponse:function () {
                 return roomResponse;
@@ -138,8 +140,6 @@ function LoginCtrl($scope, $http) {
             }
         });
     };
-
-
 }
 
 function FunctionalityCtrl($scope, $http) {
@@ -191,20 +191,38 @@ function RegistrationCtrl($scope, $http) {
 
 
 
-/* the responce from the sql database with the available rooms will be saved
+/* the response from the sql database with the available rooms will be saved
     in the variable "roomResponse" in the "availableroomsService" service using
     the factories getter and setter methods. This can then be retrieved from the
     MakereservationCtrl method.*/
-function SearchroomsCtrl($scope, $http, availableroomsService) {
-    console.log('You made it to SearchroomsCtrl. Hello!');
-    $scope.curdate = new Date(new Date().setHours(0,0,0,0));
+
+function ViewreviewCtrl($scope, $http) {
     $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
     $scope.curSelectedLoc = $scope.locations[0];
-    $scope.startdate = new Date("2015,1,1");
-    $scope.enddate = new Date("2015,1,2");
+    // $scope.reviewlist = [{rating:"good",comment:"hello to the world ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ"},{rating:"zaBestEvaar",comment:"¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯"}]
+    $scope.retrive = function (argument) {
+        var body = {"Location":$scope.curSelectedLoc.name};
+        $http.post('/viewreview',body).success(function(res) {
+            if (res) {
+                console.log("Recieved something");
+                console.log("res:", res);
+                $scope.response = 'Review left successfully';
+                $scope.reviewlist = res;
+            }
+        });
+    }
+}
+
+function SearchroomsCtrl($scope, $http, availableroomsService) {
+    console.log('You made it to SearchroomsCtrl. Hello!');
+    $scope.curdate = new Date();
+    $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
+    $scope.curSelectedLoc = $scope.locations[0];
+    $scope.startdate = $scope.curdate;
+    $scope.enddate = new Date(new Date().setHours(24,0,0,0));
     $scope.search = function () {
         if ($scope.startdate.valueOf() >= $scope.enddate.valueOf()) {
-            $scope.message = " Please choose end date after stardate.";
+            $scope.message = " Please choose end date after start date.";
             return;
         }
         if ($scope.startdate < $scope.curdate) {
@@ -218,41 +236,66 @@ function SearchroomsCtrl($scope, $http, availableroomsService) {
         $http.post('/searchrooms', body).success(function(res) {
             if (res) {
                 console.log("Search worked");
+                console.log("PROBLEM SPOT UGH:", res);
+                testdata = res;
                 availableroomsService.saveroomResponse(res);
-                console.log("service response:",availableroomsService.getroomResponse());
                 $scope.showRooms();
-            }
+            }           
+            // if (res) {
+            //     console.log("Search worked");
+            //     availableroomsService.saveroomResponse(res);
+            //     console.log("service response:",availableroomsService.getroomResponse());
+            //     $scope.showRooms();
+            // }
         });
     }
 }
 
 
-function MakereservationCtrl($scope, $http, $availableroomsService) {
+
+
+function MakereservationCtrl($scope, $http, availableroomsService) {
     console.log('You made it to Makereservation. Hello!');
+    console.log(availableroomsService.getroomResponse());
+
     // TODO: set room list from getroomResponse
     // TODO: set location from getroomResponse to send with push
+    var rooms = availableroomsService.getroomResponse();
 
-    $scope.roomlist = [
-        {number: 1, category: 'Standard', pallowed: 5, costperday : 200, costextrabed : 20, selected : true },
-        {number: 3, category: 'Family', pallowed: 4, costperday : 100, costextrabed : 10, selected : false}
-    ];
+     //$scope.roomlist = [
+     //    {number: rooms[], category: 'Standard', pallowed: 5, costperday : 200, costextrabed : 20, selected : true },
+     //    {number: 3, category: 'Family', pallowed: 4, costperday : 100, costextrabed : 10, selected : false}
+     //];
+
+    $scope.roomlist= [];
+
+    for (var i = 0; i < rooms.length; i++) {
+        $scope.roomlist.push(
+            {number: rooms[i].Room_no, category: rooms[i].Room_category, pallowed:  rooms[i].No_people,
+                costperday: rooms[i].Cost_per_day, costextrabed: rooms[i].Cost_extra_bed_per_day}
+        )
+    }
+
+
+//            <td>{{room.number}}</td>
+//        <td>{{room.category}}</td>
+//<td>{{room.pallowed}}</td>
+//<td>{{room.costperday}}</td>
+//<td>{{room.costextrabed}}</td>
+
     $scope.checkDetails = function(argument) {
         var selroomnums = {
             nums: []
-        }
-        angular.forEach($scope.roomlist, function(room,key){
-            var a = room
+        };
+        angular.forEach($scope.roomlist, function(room, key){
+            var a = room;
             console.log(room['selected']);
             if (room['selected']) {
                 selroomnums.nums.push(room['number'])
             }
-
         });
-
         console.log(selroomnums.nums);
-
     }
-
 }
 
 
@@ -268,12 +311,10 @@ function ViewreviewCtrl($scope, $http) {
             if (res) {
                 console.log("Recieved something");
                 console.log("res:", res);
-
-                    $scope.response = 'Review left successfully';
-                    $scope.reviewlist = res;
+                $scope.response = 'Review left successfully';
+                $scope.reviewlist = res;
             }
         });
-
     }
 }
 

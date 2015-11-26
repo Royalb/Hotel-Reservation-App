@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express();
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
 var mysql      = require('mysql');
 var connection = mysql.createConnection({
     host     : 'academic-mysql.cc.gatech.edu',
@@ -42,26 +42,23 @@ app.post('/login',function(req,res) {
                         result["Data"] = "Successfully logged in.";
                         result["Success"] = "true";
                         res.json(result);
-                    }else{
+                    } else {
                         console.log("Username or Password in incorrect", rows);
                         result["Data"] = "Username or password is incorrect.";
-
                         res.json(result);
                     }
                 });
-
-
     console.log("resule: ", result);
-
 });
-// TODO: Does not tell user when regestration fails
+
+// TODO: Does not tell user when registration fails
 app.post('/register',function(req,res) {
     console.log("Username:",req.body.Username);
     var Username = req.body.Username;
     var Password = req.body.Password;
     var PasswordConfirm = req.body.PasswordConfirm;
     var Email = req.body.Email;
-    var result = { "Data":"", "Success":false};
+    var result = { "Data":"", "Success":"false"};
         connection.query("SELECT * FROM CUSTOMER WHERE Cust_username=? LIMIT 1",
                 [req.body.Username], function(err, rows, fields){
                     if(err) {
@@ -71,7 +68,7 @@ app.post('/register',function(req,res) {
                         console.log("Username Taken", rows);
                         result["Data"] = "Username Taken";
                         res.json(result);
-                    }else{
+                    } else {
                         console.log("rows returned:",rows);
                         connection.query("INSERT INTO CUSTOMER (Email,Cust_username,Password) VALUES(?,?,?)",
                                 [Email,Username,Password], function(err, rows, fields){
@@ -82,46 +79,12 @@ app.post('/register',function(req,res) {
                                         console.log("registered done");
                                     }
                                 });
-
                         result["Data"] = "Probably Registered Successfully";
                         result["Success"] = true;
                         res.json(result);
                     }
                 });
     console.log("resule: ", result);
-});
-
-
-
-app.post('/searchrooms',function(req,res) {
-    var startdate = req.body.Startdate;
-    var enddate = req.body.Enddate;
-    var location = req.body.Location;
-
-    console.log("locatoin:",location);
-    console.log("startdate:",enddate);
-    console.log("enddate:",startdate);
-
-    // TODO: request room information from server
-    // TODO: send properly formated json to res from query
-    // connection.query("SELECT * FROM CUSTOMER WHERE Cust_username=? AND Password=? LIMIT 1",
-    //         [req.body.Username,req.body.Password], function(err, rows, fields){
-    //             if(err) {
-    //                 console.error('bad query: ' + err.stack);
-    //             }
-    //             if(rows.length != 0){
-    //                 console.log(rows);
-    //                 result["Data"] = "Successfully logged in.";
-    //                 res.json(result);
-    //             }else{
-    //                 console.log("Username or Password in incorrect", rows);
-    //                 result["Data"] = "Email or password is incorrect.";
-    //                 res.json(result);
-    //             }
-    //         });
-    //
-    // console.log("resule: ", result);
-
 });
 
 
@@ -152,7 +115,7 @@ app.post('/viewreview',function(req,res) {
     var result = { "Data":"", "Success":false};
     console.log("location:",req.body.Location);
 
-    connection.query("SELECT Rating, Comment  FROM HOTEL_REVIEW WHERE Location=?",
+    connection.query("SELECT Rating, Comment FROM HOTEL_REVIEW WHERE Location=?",
             [req.body.Location], function(err, rows, fields){
                 if(err) {
                     console.error('bad query: ' + err.stack);
@@ -169,6 +132,54 @@ app.post('/viewreview',function(req,res) {
 
 //----------------------------------tobedone------------------------------------
 //------------------------------------------------------------------------------
+//@TODO Search room, make reservation, and put up reservation confirmation screen
+app.post('/searchrooms',function(req,res) {
+    var result = { "Data":"", "Success": "false"}; //if not returning rows use this
+    var startdate = req.body.Startdate;
+    var enddate = req.body.Enddate;
+
+    console.log("startdate:",enddate);
+    console.log("enddate:",startdate);
+
+    connection.query("SELECT * FROM ROOM WHERE Location=?",
+        [req.body.Location], function(err, rows, fields){
+            if(err) {
+                console.error('bad query: ' + err.stack);
+                result["Data"] = "ROOM RETRIEVAL FAILURE";
+                res.json(result);
+            } else {
+                // result["Success"] = "true";
+                console.log("ROOMS RECEIVED!", rows);
+                // console.log("result: ", result);
+                res.json(rows);
+            }
+        });
+});
+
+app.post('/makereservation',function(req,res) {
+    var result = { "Data":"", "Success":false}; //if not returning rows use this
+    //var somevar1 = req.body.somevar;
+    //var somevar2 = req.body.somevar;
+
+    //some sql query. question marks are replaced [somevar1,somevar2] respectively
+    connection.query("SELECT something  FROM somewhere WHERE firstvar=? AND secondvar=?",
+            [somevar1,somevar2], function(err, rows, fields){
+                if(err) {
+                    //Data set and returned on sql error
+                    console.error('bad query: ' + err.stack);
+                    result["Data"] = "FAILURE";
+                    res.json(result);
+                } else {
+                    //return "rows" if getting database data
+                    //if no data is to be returned, return result with "Data"set as "success!" or something
+                    //
+                    console.log("RECEIVED!", rows);
+                    res.json(rows);
+                }
+            });
+});
+
+
 app.post('/reservationconformation',function(req,res) {
     var result = { "Data":"", "Success":false}; //if not returning rows use this
     //var somevar1 = req.body.somevar;
