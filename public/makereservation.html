@@ -1,47 +1,116 @@
+<style>
+.boxed {
+	margin: 15px;
+	height: 34px;
+	width: 193px;
+	color: #555;
+	background-color: #fff;
+	background-image: none;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+	-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+	-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+
+
+}
+</style>
+
 <html>
+
     <script src="js/checklist-model.js"></script>
+
     <body>
         <div class="main-container container-fluid text-center" ng-controller="MakereservationCtrl">
             <h1 class="bg-info">Make a Reservation</h1>
             <table class="table table-responsive table-hover table-striped">
-			<thead>
-				<tr>
-					<th>Room number</th>
-					<th>Room Category</th>
-					<th># Persons Allowed</th>
-					<th>Cost per day</th>
-					<th>Cost of extra bed per day</th>
-					<th>select room</th>
-				</tr>
-			</thead>
-			<tbody>
-                <!-- <tr>
-                    <td><input class="form-control" ng-model="room.number"></td>
-                    <td><input class="form-control" ng-model="room.category"></td>
-                    <td><input class="form-control" ng-model="room.pallowed"></td>
-                    <td><input class="form-control" ng-model="room.costperday"></td>
-                    <td><input class="form-control" ng-model="room.costextrabed"></td>
-                    <td><input type="checkbox" checklist-value="room.number"></input></td>
-                </tr> -->
-				<tr ng-repeat="room in roomlist">
-					<td>{{room.number}}</td>
-					<td>{{room.category}}</td>
-					<td>{{room.pallowed}}</td>
-					<td>{{room.costperday}}</td>
-					<td>{{room.costextrabed}}</td>
-					<!-- <td><input type="checkbox" checklist-model="user.roles" checklist-value="room.number"></input></td> -->
-					<td><input type="checkbox" ng-model="room.selected"></input></td>
-				</tr>
-			</tbody>
-		</table>
+				<thead>
+					<tr>
+						<th>Room number</th>
+						<th>Room Category</th>
+						<th># Persons Allowed</th>
+						<th>Cost per day</th>
+						<th>Cost of extra bed per day</th>
+						<th>Select room</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="room in roomlist">
+						<td>{{room.number}}</td>
+						<td>{{room.category}}</td>
+						<td>{{room.pallowed}}</td>
+						<td>{{room.costperday}}</td>
+						<td>{{room.costextrabed}}</td>
+						<!-- <td><input type="checkbox" checklist-model="user.roles" checklist-value="room.number"></input></td> -->
+						<td><input type="checkbox" ng-model="room.selected"></input></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<div class="col-sm-7 "></div>
+				<div class=" col-sm-5 text-right " ng-init="obj={clicked:false}">
+					<button type="submit" class="btn btn-default" ng-if="!obj.clicked" ng-click="checkDetails(); obj.clicked = true">Check Details</button>
+				</div>
 
 
-        <div class="col-sm-7 "></div>
-            <div class=" col-sm-5 text-right ">
-                <button type="submit" class="btn btn-default" ng-click="checkDetails()">Check Details</button>
-            </div>
-        </div>
+			<div ng-show="obj.clicked">
+				<table class="table table-responsive table-hover table-striped">
+					<thead>
+						<th>Room Number</th>
+						<th>Room Category</th>
+						<th># Persons Allowed</th>
+						<th>Cost per day</th>
+						<th>Cost of extra bed per day</th>
+						<th>Extra bed</th>
+					</thead>
+					<tbody>
 
-        </div>
+					<tr ng-repeat="selroom in selectedRooms" >
+						<td>{{selroom.number}}</td>
+						<td>{{selroom.category}}</td>
+						<td>{{selroom.pallowed}}</td>
+						<td>{{selroom.costperday}}</td>
+						<td>{{selroom.costextrabed}}</td>
+						<td><input type="checkbox" ng-model="selroom.extraBedSelected"></input></td>
+					</tr>
+					</tbody>
+				</table>
+
+
+				<div class="form-group">
+					<label class="control-label col-sm-2" style="margin-top: 20px" >Start date:</label>
+					<div class="col-sm-4 boxed" style="margin-top: 20px" ng-bind="startdate | date:'MM/dd/yyyy'"></div>
+
+
+					<!--<div class="col-sm-4">-->
+						<!--<input type="date" class="form-control" ng-model="startdate" placeholder="x/xx/xxxx">-->
+					<!--</div>-->
+
+					<label class="control-label col-sm-2" style="margin-top: 20px" >End date:</label>
+					<div class="col-sm-4 boxed" style="margin-top: 20px" ng-bind="enddate | date:'MM/dd/yyyy'"></div>
+
+					<!--<div class="col-sm-4">-->
+						<!--<input type="date" class="form-control" ng-model="enddate" placeholder="x/xx/xxxx">-->
+					<!--</div>-->
+
+					<label class="control-label col-sm-2" style="margin-top: 20px">Total Cost:</label>
+					<div class="col-sm-4 boxed" style="margin-top: 20px" placeholder="$0"> {{calculateTotalCost() }}</div>
+
+					<label class="control-label col-sm-2" style="margin-top: 20px";>Use Card:</label>
+					<div class="col-sm-4" style="margin-top: 20px">
+						<input type="number" value="0" min="0" step="0.01" class="form-control" ng-model="cardnumber" placeholder="1111">
+					</div>
+
+					<div class="col-sm-7 "></div>
+					<div class=" col-sm-5 text-right ">
+						<button type="submit" class="btn btn-default" ng-click="submitReservation()">Submit</button>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
     </body>
 </html>

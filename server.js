@@ -19,8 +19,6 @@ connection.connect(function(err) {
 });
 
 
-
-
 //set express and bodyParser setting
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json());
@@ -197,7 +195,7 @@ app.post('/reservationconformation',function(req,res) {
                     //return "rows" if getting database data
                     //if no data is to be returned, return result with "Data"set as "success!" or something
                     //
-                    console.log("RECIEVED!", rows);
+                    console.log("RECEIVED!", rows);
                     res.json(rows);
                 }
             });

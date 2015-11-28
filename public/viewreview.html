@@ -12,6 +12,7 @@
                                     </select>
                                 </div>
                             </div>
+
                             <div class="form-group">
 
                                 <div class="col-sm-7 "></div>
@@ -21,25 +22,22 @@
                             </div>
                         </form>
 
-
-            </table>
             <table class="table table-responsive  table-striped">
-			<thead>
-				<tr class="main-container">
-					<th style="width:20%" >Rating</th>
-					<th>Comment</th>
-				</tr>
-			</thead>
-			<tbody>
+                <thead>
+                    <tr class="main-container">
+                        <th style="width:20%" >Rating</th>
+                        <th>Comment</th>
+                    </tr>
+                </thead>
+                <tbody>
 
-				<tr class="main-container" ng-repeat="review in reviewlist">
-					<td>{{review.Rating}}</td>
-					<td>{{review.Comment}}</td>
-				</tr>
-			</tbody>
-		</table>
+                    <tr class="main-container" ng-repeat="review in reviewlist">
+                        <td>{{review.Rating}}</td>
+                        <td>{{review.Comment}}</td>
+                    </tr>
+                </tbody>
+		    </table>
             {{enddate}}
-
         </div>
     </body>
 </html>
