@@ -60,7 +60,7 @@ app.controller('LoginCtrl',['$scope','$http', LoginCtrl]);
 app.controller('FunctionalityCtrl',['$scope','$http', FunctionalityCtrl]);
 app.controller('RegistrationCtrl',['$scope','$http', RegistrationCtrl]);
 app.controller('SearchroomsCtrl',['$scope','$http','availableroomsService', SearchroomsCtrl]);
-app.controller('MakereservationCtrl',['$scope','$http','availableroomsService', MakereservationCtrl]);
+app.controller('MakereservationCtrl',['$scope','$http','availableroomsService','reservedRoomsService', MakereservationCtrl]);
 app.controller('PaymentinfoCtrl',['$scope','$http','availableroomsService', PaymentinfoCtrl]);
 app.controller('ViewreviewCtrl',['$scope','$http', ViewreviewCtrl]);
 app.controller('GivereviewCtrl',['$scope','$http', GivereviewCtrl]);
@@ -84,14 +84,14 @@ app.factory('availableroomsService', function () {
             saveenddate: function(data) {
                 enddate = data;
             },
-            saveroomResponse:function (data) {
+            saveroomResponse: function (data) {
                 roomResponse = data;
             },
 
-            getroomResponse:function () {
+            getroomResponse: function () {
                 return roomResponse;
             },
-            getstartdate:function() {
+            getstartdate: function() {
                 return startdate;
             },
             getenddate: function() {
@@ -105,11 +105,10 @@ app.factory('reservedRoomsService', function () {
     var roomResponse = {};
 
     return {
-        saveroomResponse:function (data) {
+        saveReservedRooms:function (data) {
             roomResponse = data;
-            console.log(roomResponse);
         },
-        getroomResponse:function () {
+        getReservedRooms:function () {
             return roomResponse;
         }
     };
@@ -142,6 +141,9 @@ function AppCtrl($scope, $http, $location) {
     };
     $scope.payForRooms = function() {
         $location.path("/paymentinfo");
+    };
+    $scope.makeReservation = function() {
+        $location.path("/reservationconformation");
     };
     $scope.showReviews = function() {
         $location.path("/viewreview");
@@ -197,7 +199,7 @@ function RegistrationCtrl($scope, $http) {
             return;
         }
         if (($scope.user.Email == "" )|| ($scope.user.Email === undefined ) || ($scope.user.Password == "")) {
-            $scope.registerResponse = "All Feilds are Required!";
+            $scope.registerResponse = "All Fields are Required!";
             return;
         }
         console.log($scope.user);
@@ -220,37 +222,17 @@ function RegistrationCtrl($scope, $http) {
     };
 }
 
-
-
-/* the response from the sql database with the available rooms will be saved
-    in the variable "roomResponse" in the "availableroomsService" service using
-    the factories getter and setter methods. This can then be retrieved from the
-    MakereservationCtrl method.*/
-
-function ViewreviewCtrl($scope, $http) {
-    $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
-    $scope.curSelectedLoc = $scope.locations[0];
-    // $scope.reviewlist = [{rating:"good",comment:"hello to the world ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ"},{rating:"zaBestEvaar",comment:"¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯¯\\_(ツ)_/¯"}]
-    $scope.retrive = function (argument) {
-        var body = {"Location":$scope.curSelectedLoc.name};
-        $http.post('/viewreview',body).success(function(res) {
-            if (res) {
-                console.log("Received something");
-                console.log("res:", res);
-                $scope.response = 'Review left successfully';
-                $scope.reviewlist = res;
-            }
-        });
-    }
-}
+// JENNA'S TASKS: SEARCH ROOM, MAKE RESERVATION, UPDATE PAYMENT INFORMATION, UPDATE RESERVATION, CANCEL RESERVATION
 
 function SearchroomsCtrl($scope, $http, availableroomsService) {
     console.log('You made it to SearchroomsCtrl. Hello!');
+
     $scope.curdate = new Date();
     $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
     $scope.curSelectedLoc = $scope.locations[0];
     $scope.startdate = $scope.curdate;
     $scope.enddate = new Date(new Date().setHours(24,0,0,0));
+
     $scope.search = function () {
         if ($scope.startdate.valueOf() >= $scope.enddate.valueOf()) {
             $scope.message = " Please choose end date after start date.";
@@ -260,9 +242,10 @@ function SearchroomsCtrl($scope, $http, availableroomsService) {
             $scope.message = "Can not choose dates in the past";
             return;
         }
-        var body = {"Startdate":$scope.startdate.toISOString().substr(0,9)
-                    ,"Enddate":$scope.enddate.toISOString().substr(0,9)
-                    ,"Location":$scope.curSelectedLoc.name};
+        var body = {
+            "Startdate":$scope.startdate.toISOString().substr(0,9),
+            "Enddate":$scope.enddate.toISOString().substr(0,9),
+            "Location":$scope.curSelectedLoc.name};
 
         $http.post('/searchrooms', body).success(function(res) {
             if (res) {
@@ -277,25 +260,29 @@ function SearchroomsCtrl($scope, $http, availableroomsService) {
 }
 
 
-function MakereservationCtrl($scope, $http, availableroomsService) {
+function MakereservationCtrl($scope, $http, availableroomsService, reservedRoomsService) {
     console.log('You made it to Makereservation. Hello!');
 
     $scope.startdate = availableroomsService.getstartdate();
     $scope.enddate = availableroomsService.getenddate();
-
     var rooms = availableroomsService.getroomResponse();
 
     $scope.roomlist = [];
 
+    // Populate available room table
     for (var i = 0; i < rooms.length; i++) {
-        $scope.roomlist.push(
-            {number: rooms[i].Room_no, category: rooms[i].Room_category, pallowed: rooms[i].No_people,
-                costperday: rooms[i].Cost_per_day, costextrabed: rooms[i].Cost_extra_bed_per_day}
+        $scope.roomlist.push({
+                number: rooms[i].Room_no,
+                category: rooms[i].Room_category,
+                pallowed: rooms[i].No_people,
+                costperday: rooms[i].Cost_per_day,
+                costextrabed: rooms[i].Cost_extra_bed_per_day}
         )
     }
 
     $scope.selectedRooms = [];
 
+    // Populate selected room table
     $scope.checkDetails = function(argument) {
         angular.forEach($scope.roomlist, function(room, key){
             if (room['selected'] && $scope.selectedRooms.indexOf(room) == -1) {
@@ -304,6 +291,9 @@ function MakereservationCtrl($scope, $http, availableroomsService) {
         });
     };
 
+    console.log("what is going on?1");
+
+    // Dynamically calculate total cost
     $scope.calculateTotalCost = function() {
         var totalcost = 0;
         angular.forEach($scope.selectedRooms, function(selroom, key) {
@@ -315,6 +305,35 @@ function MakereservationCtrl($scope, $http, availableroomsService) {
         return totalcost;
     };
 
+
+    // Populate payment information dropdown
+
+    console.log("what is going on?2");
+
+    $scope.cardlist = [];
+    var body = {
+        "User":$scope.curUser};
+
+    //$http.post('/getcardinfo',body).success(function(res) {
+    //    if (res) {
+    //        $scope.cardlist = res;
+    //    }
+    //});
+
+    console.log("what is going on?3");
+
+
+    $scope.selectedCard = "";
+
+    $scope.dropdownSelectedCard = function (item) {
+        $scope.selectedCard = item;
+    };
+
+    //$scope.makeReservation();
+
+    //@TODO USER MUST PICK A PAYMENT INFORMATION FROM DROPDOWN
+
+    // Submit reservation
     $scope.submitReservation = function () {
         if ($scope.startdate.valueOf() >= $scope.enddate.valueOf()) {
             $scope.message = " Please choose end date after start date.";
@@ -325,9 +344,11 @@ function MakereservationCtrl($scope, $http, availableroomsService) {
             return;
         }
 
-        reservedRoomsService.saveRoomResponse($scope.selectedRooms);
+        reservedRoomsService.saveReservedRooms($scope.selectedRooms);
 
-        $scope.payForRooms(); //directed to payment information page
+        $scope.makeReservation();
+
+        //$scope.payForRooms(); //directed to payment information page
     };
 }
 
@@ -339,43 +360,100 @@ function MakereservationCtrl($scope, $http, availableroomsService) {
 // TODO: retrive payment info
 function PaymentinfoCtrl($scope, $http) {
     console.log('You made it to Paymentinfo. Hello!');
-    var body = {};
-    // post that sends data(what's in body) to sqlserver
-    $http.post('/savecard',body).success(function(res) {
-        if (res) {
-            console.log("Received something");
-            if (res["Success"]) {
-                $scope.response = 'Card Saved successfully';
+    var curdate = new Date();
 
-            } else {
-                $scope.response = 'Something went wrong.';
+    $scope.cardholdername = "";
+    $scope.cardnum ;
+    $scope.cardnumDelete;
+    $scope.expdate;
+    $scope.cvv;
+
+    $scope.addCard = function () {
+        console.log("adding card?");
+        //if (!(/^[A-z ]+$/.test($scope.name))) {
+        //    $scope.message = "name is not valid";
+        //    return;
+        //}
+        //
+        //if (curdate.valueOf() >= $scope.expdate.valueOf()) {
+        //    $scope.message = "Card is expired.";
+        //    return;
+        //}
+
+        // check if cardnum and cardnumDelete is 16 digits number
+
+        var body = {
+            "Name": $scope.cardholdername,
+            "CardNum": $scope.cardnum,
+            "Expdate": $scope.expdate.toISOString().substr(0,9),
+            "Customer": $scope.curUser,
+            "cvv": $scope.cvv};
+
+        // post that sends data(what's in body) to sqlserver
+        $http.post('/savecard', body).success(function(res) {
+            if (res) {
+                console.log("Received something");
+                if (res["Success"]) {
+                    $scope.response = 'Card Saved successfully';
+
+                } else {
+                    $scope.response = 'Something went wrong.';
+                }
             }
-        }
-    });
-    $http.post('/deletecard',body).success(function(res) {
-        if (res) {
-            console.log("Receive something");
-            if (res["Success"]) {
-                $scope.response = 'Card deleted successfully';
-            } else {
-                $scope.response = 'Something went wrong.';
-
-            }
-        }
-    });
-    //a post that gets info
-    $http.post('/getcardinfo',body).success(function(res) {
-        if (res) {
-            console.log("Received something");
-            console.log("res:", res);
-            $scope.cardlist = res;
-        }
-    });
-
-    $scope.submitPayment = function () {
+        });
 
     };
+
+    //$http.post('/deletecard',body).success(function(res) {
+    //    if (res) {
+    //        console.log("Receive something");
+    //        if (res["Success"]) {
+    //            $scope.response = 'Card deleted successfully';
+    //        } else {
+    //            $scope.response = 'Something went wrong.';
+    //
+    //        }
+    //    }
+    //});
+    ////a post that gets info
+    //$http.post('/getcardinfo',body).success(function(res) {
+    //    if (res) {
+    //        console.log("Received something");
+    //        console.log("res:", res);
+    //        $scope.cardlist = res;
+    //    }
+    //});
+    //
+    //$scope.makeReservation();
 }
+
+
+//@TODO GENERATE UNIQUE RESERVATION ID THAT IS 6 DIGITS
+function ReservationconformationCtrl($scope, $http) {
+    console.log('You made it to Mrevenuereport. Hello!');
+}
+
+
+//@TODO RESERVATION ID LOOKUP
+//@TODO POPULATE START DATE/ END DATE BOXES
+//@TODO POPULATE ROOM INFORMATION TABLE
+
+//@TODO CALCULATE CANCELLATION CHARGES
+function CancelreservationCtrl($scope, $http) {
+    console.log('You made it to Cancelreservation. Hello!');
+}
+
+
+function UpdatereservationCtrl($scope, $http) {
+    console.log('You made it to updatereservation. Hello!');
+}
+
+
+
+/* the response from the sql database with the available rooms will be saved
+ in the variable "roomResponse" in the "availableroomsService" service using
+ the factories getter and setter methods. This can then be retrieved from the
+ MakereservationCtrl method.*/
 
 
 
@@ -413,7 +491,12 @@ function GivereviewCtrl($scope, $http) {
         if ($scope.comment.length > 5000) {
             $scope.response = "Comment must be less that 5000 characters currently:" + $scope.comment.length
         }
-        var body = {"Location":$scope.curSelectedLoc.name, "Rating":$scope.curSelectedRat.name, "Comment":$scope.comment, "Customer":$scope.curUser};
+        var body = {
+            "Location":$scope.curSelectedLoc.name,
+            "Rating":$scope.curSelectedRat.name,
+            "Comment":$scope.comment,
+            "Customer":$scope.curUser};
+
         $http.post('/givereview',body).success(function(res) {
             if (res) {
                 console.log("Recieved something");
@@ -431,10 +514,6 @@ function GivereviewCtrl($scope, $http) {
 }
 
 
-function CancelreservationCtrl($scope, $http) {
-    console.log('You made it to Cancelreservation. Hello!');
-}
-
 
 function MpopularroomCtrl($scope, $http) {
     console.log('You made it to Mpopularroom. Hello!');
@@ -450,12 +529,3 @@ function MrevenuereportCtrl($scope, $http) {
     console.log('You made it to Mrevenuereport. Hello!');
 }
 
-
-function ReservationconformationCtrl($scope, $http) {
-    console.log('You made it to Mrevenuereport. Hello!');
-}
-
-
-function UpdatereservationCtrl($scope, $http) {
-    console.log('You made it to updatereservation. Hello!');
-}

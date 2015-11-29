@@ -88,10 +88,10 @@ app.post('/register',function(req,res) {
 
 app.post('/givereview',function(req,res) {
     var result = { "Data":"", "Success":false};
-    console.log("comment:",req.body.Comment);
-    console.log("rating:",req.body.Rating);
-    console.log("location:",req.body.Location);
-    console.log("customer:",req.body.Customer);
+    //console.log("comment:",req.body.Comment);
+    //console.log("rating:",req.body.Rating);
+    //console.log("location:",req.body.Location);
+    //console.log("customer:",req.body.Customer);
 
     connection.query("INSERT INTO HOTEL_REVIEW (Review_no,Location,Rating,Comment,Customer) VALUES ('NULL',?,?,?,?)",
             [req.body.Location,req.body.Rating,req.body.Comment,req.body.Customer], function(err, rows, fields){
@@ -133,6 +133,7 @@ app.post('/viewreview',function(req,res) {
 //@TODO Search room, make reservation, and put up reservation confirmation screen
 app.post('/searchrooms',function(req,res) {
     var result = { "Data":"", "Success": "false"}; //if not returning rows use this
+
     var startdate = req.body.Startdate;
     var enddate = req.body.Enddate;
 
@@ -202,15 +203,22 @@ app.post('/reservationconformation',function(req,res) {
 });
 
 
-//paymentinfo related-----------------------------------------------------------
+//@TODO ADD CARD QUERY
 app.post('/savecard',function(req,res) {
     var result = { "Data":"", "Success":false}; //if not returning rows use this
-    //var somevar1 = req.body.somevar;
-    //var somevar2 = req.body.somevar;
+
+    var Name = req.body.Name;
+    var CardNum = req.body.CardNum;
+    var ExpDate = req.body.Expdate;
+    var curUser = req.body.Customer;
+    var cvv = req.body.cvv;
+
+    //INSERT INTO CUSTOMER (Email,Cust_username,Password) VALUES(?,?,?)"
+    //INSERT INTO PAYMENT_INFORMATION(
 
     //some sql query question marks are replaced [somevar1,somevar2] respectively
-    connection.query("SELECT something  FROM somewhere WHERE firstvar=? AND secondvar=?",
-            [somevar1,somevar2], function(err, rows, fields){
+    connection.query("INSERT INTO PAYMENT_INFORMATION (Name, CVV, Exp_date, Customer, Card_no) VALUES (?,?,?,?,?)",
+            [Name, CardNum, ExpDate, curUser, cvv], function(err, rows, fields){
                 if(err) {
                     //Data set and returned on sql error
                     console.error('bad query: ' + err.stack);
@@ -221,19 +229,21 @@ app.post('/savecard',function(req,res) {
                     //if no data is to be returned, return result with "Data"set as "success!" or something
                     //
                     result["Success"] = true;
-                    console.log("RECIEVED!", rows);
+                    console.log("RECEIVED!", rows);
                     res.json(result);
                 }
             });
 });
 
+
+//@TODO DELETE CARD QUERY
 app.post('/deletecard',function(req,res) {
     var result = { "Data":"", "Success":false}; //if not returning rows use this
-    //var somevar1 = req.body.somevar;
-    //var somevar2 = req.body.somevar;
+
+    var CardNum = req.body.CardNum;
 
     //some sql query question marks are replaced [somevar1,somevar2] respectively
-    connection.query("SELECT something  FROM somewhere WHERE firstvar=? AND secondvar=?",
+    connection.query("DELETE FROM PAYMENT_INFORMATION WHERE Card_no=?",
             [somevar1,somevar2], function(err, rows, fields){
                 if(err) {
                     //Data set and returned on sql error
@@ -253,32 +263,20 @@ app.post('/deletecard',function(req,res) {
 //  this may get called on multiple pages to populate card info dropdowns
 app.post('/getcardinfo',function(req,res) {
     var result = { "Data":"", "Success":false}; //if not returning rows use this
-    //var somevar1 = req.body.somevar;
-    //var somevar2 = req.body.somevar;
+    var user = req.body.User;
 
     //some sql query question marks are replaced [somevar1,somevar2] respectively
-    connection.query("SELECT something  FROM somewhere WHERE firstvar=? AND secondvar=?",
-            [somevar1,somevar2], function(err, rows, fields){
+    connection.query("SELECT Card_no FROM PAYMENT_INFORMATION WHERE Customer=?",
+            [user], function(err, rows, fields){
                 if(err) {
-                    //Data set and returned on sql error
                     console.error('bad query: ' + err.stack);
-                    //result["Data"] = "FAILURE";
                     res.json(result);
                 } else {
-                    //return "rows" if getting database data
-                    //if no data is to be returned, return result with "Data"set as "success!" or something
-                    //
                     console.log("RECIEVED!", rows);
                     res.json(rows);
                 }
             });
 });
-
-
-
-
-
-
 
 
 // does not do anything probably remove this.

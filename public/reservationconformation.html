@@ -1,8 +1,14 @@
 <html>
     <body>
         <div class="main-container container-fluid text-center" ng-controller="ReservationconformationCtrl">
-            <h1 class="bg-info">Conformation Screen</h1>
+            <h1 class="bg-info">Confirmation Screen</h1>
 
+
+            <div class="form-group" style="align-content: center">
+                <label class="control-label col-sm-4" style="margin-top: 20px">Your Reservation ID:</label>
+                <div class="col-sm-4 boxed" style="margin-top: 20px"> {{generateReservationID() }}</div>
+
+            </div>
 
         </div>
     </body>
