@@ -139,7 +139,7 @@ function AppCtrl($scope, $http, $location) {
     $scope.showRooms = function() {
         $location.path("/makereservation");
     };
-    $scope.payForRooms = function() {
+    $scope.editPaymentInfo = function() {
         $location.path("/paymentinfo");
     };
     $scope.makeReservation = function() {
@@ -214,9 +214,7 @@ function RegistrationCtrl($scope, $http) {
                 $scope.registerResponse = res["Data"];
                 if(res["Success"]){
                     $scope.loginSucess();
-
                 }
-
             }
         });
     };
@@ -297,7 +295,6 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
     $scope.calculateTotalCost = function() {
         var totalcost = 0;
         angular.forEach($scope.selectedRooms, function(selroom, key) {
-            console.log(selroom);
             totalcost += selroom.costperday;
             if (selroom['extraBedSelected']) {
                 totalcost += selroom.costextrabed;}
@@ -314,16 +311,15 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
     var body = {
         "User":$scope.curUser};
 
-    //$http.post('/getcardinfo',body).success(function(res) {
-    //    if (res) {
-    //        $scope.cardlist = res;
-    //    }
-    //});
+    $http.post('/getcardinfo',body).success(function(res) {
+        if(res["Success"]){
+            $scope.cardlist = res;
+            console.log("card information?");
+            console.log(res)
+        }
+    });
 
-    console.log("what is going on?3");
-
-
-    $scope.selectedCard = "";
+    $scope.selectedCard;
 
     $scope.dropdownSelectedCard = function (item) {
         $scope.selectedCard = item;
@@ -362,23 +358,40 @@ function PaymentinfoCtrl($scope, $http) {
     console.log('You made it to Paymentinfo. Hello!');
     var curdate = new Date();
 
-    $scope.cardholdername = "";
-    $scope.cardnum ;
-    $scope.cardnumDelete;
-    $scope.expdate;
-    $scope.cvv;
+    $scope.card = {
+        'cardholdername' : '',
+        'cardnum' : '',
+        'expmonth' : '',
+        'expyear' : '',
+        'cvc' : ''
+    };
+
+    //$scope.cardholdername = "";
+    //$scope.cardnum = "" ;
+    //$scope.expdate = curdate;
+    //$scope.cvv = 111 ;
+    //
+    $scope.cardnumDelete = "";
+
 
     $scope.addCard = function () {
-        console.log("adding card?");
-        //if (!(/^[A-z ]+$/.test($scope.name))) {
-        //    $scope.message = "name is not valid";
-        //    return;
-        //}
-        //
-        //if (curdate.valueOf() >= $scope.expdate.valueOf()) {
-        //    $scope.message = "Card is expired.";
-        //    return;
-        //}
+        console.log("adding card");
+        if (!(/^[A-z ]+$/.test($scope.cardholdername))
+            || $scope.cardholdername.length > 50
+            || $scope.cardnum.length != 16
+            || /^\d+$/.test($scope.cardnum)
+            || $scope.cvv.length != 3
+            || /^\d+$/.test($scope.cvv)
+            || curdate.valueOf() >= $scope.expdate.valueOf()) {
+
+            $scope.message = "One or more fields are invalid. Check the following: 1) names are of only alphabets, ";
+            return;
+        }
+
+        if (curdate.valueOf() >= $scope.expdate.valueOf()) {
+            $scope.message = "Card is expired.";
+            return;
+        }
 
         // check if cardnum and cardnumDelete is 16 digits number
 
