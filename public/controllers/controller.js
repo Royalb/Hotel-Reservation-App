@@ -322,12 +322,17 @@ function SearchroomsCtrl($scope, $http, availableroomsService) {
 }
 
 
+//maybe TODO since there are queries that rely on a user being logged in if not loggedin redirect to login.
+//maybe TODO also maybe check for startdate enddate and rooms are present.
+//TODO redirect to payment info if no card exists
 function MakereservationCtrl($scope, $http, availableroomsService, reservedRoomsService, reservationIdService) {
     console.log('You made it to Makereservation. Hello!');
 
     $scope.startdate = availableroomsService.getstartdate();
     $scope.enddate = availableroomsService.getenddate();
     var rooms = availableroomsService.getroomResponse();
+    $scope.totalcost = 0;
+
 
     $scope.roomlist = [];
 
@@ -338,7 +343,9 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
                 category: rooms[i].Room_category,
                 pallowed: rooms[i].No_people,
                 costperday: rooms[i].Cost_per_day,
-                costextrabed: rooms[i].Cost_extra_bed_per_day}
+                costextrabed: rooms[i].Cost_extra_bed_per_day,
+                location: rooms[i].Location,
+                extraBedSelected: false}
         )
     }
 
@@ -350,6 +357,10 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
             // push selected rooms that aren't alreayd in the list to prevent angularjs error
             if (room['selected'] && $scope.selectedRooms.indexOf(room) == -1) {
                 $scope.selectedRooms.push(room)
+            }
+            //remove from selected rooms if unselected.
+            if (!room['selected'] && $scope.selectedRooms.indexOf(room) != -1)  {
+                $scope.selectedRooms.pop(room)
             }
         });
     };
@@ -363,6 +374,7 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
             if (selroom['extraBedSelected']) {
                 totalcost += selroom.costextrabed;}
         });
+        $scope.totalcost = totalcost;
         return totalcost;
     };
 
@@ -373,6 +385,10 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
 
     $http.post('/getcardinfo',body).success(function(res) {
         if(res){
+            if (res.length < 1) {
+                console.log("need payemnet info");
+                //$scope.editPaymentInfo();
+            }
             $scope.cardlist = res;
             console.log("card information?");
             console.log(res)
@@ -400,6 +416,15 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
 
         if ($scope.selectedCard == "") {
             $scope.message = "Must select at least one card";
+            return;
+        }
+        if ($scope.selectedRooms.lenght > 0) {
+            $scope.message = "Must select at least one room";
+            return;
+        }
+        if ($scope.curUser.lenght < 1) {
+            $scope.message = "Must be logged in";
+            return;
         }
 
         //@TODO implement logic to save page state when users are finished with editing payment information state if they need to
@@ -409,18 +434,26 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
         //@TODO INSERT RESERVATION_ROOM ROW INTO THE SQL TABLE, RETRIEVE RESERVATION_ID, and SAVE IT FOR RESEVATION_CONFIRMATION
 
         var body = {
-            "User":$scope.curUser};
+            "User":$scope.curUser,
+            "Rooms":$scope.selectedRooms,
+            "Startdate":$scope.startdate,
+            "Enddate":$scope.enddate,
+            "Totalcost":$scope.totalcost,
+            "Card":$scope.selectedCard
+            };
 
         $http.post('/makereservationroom',body).success(function(res) {
             if(res["Success"]){
                 console.log("reservation has been made!?");
+                reservationIdService.saveReservationId(res["reservationId"])
+                $scope.ReservationConfirmation();
+            } else {
+                console.log("something went Wrong")
             }
         });
 
         //reservationIdService.saveReservationId(reservationId);
 
-
-        $scope.ReservationConfirmation();
     };
 }
 
@@ -675,4 +708,3 @@ function MreserationreportCtrl($scope, $http) {
 function MrevenuereportCtrl($scope, $http) {
     console.log('You made it to Mrevenuereport. Hello!');
 }
-

@@ -16,6 +16,7 @@
     <body>
         <div class="main-container container-fluid text-center" ng-controller="MakereservationCtrl">
             <h1 class="bg-info">Make a Reservation</h1>
+			{{message}}
             <table class="table table-responsive table-hover table-striped">
 				<thead>
 					<tr>
@@ -42,7 +43,7 @@
 
 			<div class="col-sm-7 "></div>
 				<div class=" col-sm-5 text-right " ng-init="obj={clicked:false}">
-					<button type="submit" class="btn btn-default" ng-if="!obj.clicked" ng-click="checkDetails(); obj.clicked = true">Check Details</button>
+					<button type="submit" class="btn btn-default"  ng-click="checkDetails(); obj.clicked = true">Check Details</button>
 				</div>
 
 
@@ -75,7 +76,7 @@
 					<div class="form-group">
 						<label class="control-label col-sm-2" style="margin-top: 20px" >Start date:</label>
 						<div class="col-sm-4 boxed" style="margin-top: 20px" ng-bind="startdate | date:'MM/dd/yyyy'"></div>
-						
+
 
 						<label class="control-label col-sm-2" style="margin-top: 20px" >End date:</label>
 						<div class="col-sm-4 boxed" style="margin-top: 20px" ng-bind="enddate | date:'MM/dd/yyyy'"></div>

@@ -158,23 +158,66 @@ app.post('/searchrooms',function(req,res) {
 
 //@TODO: THIS ONE IS FOR INSERTING INTO RESERVATION_ROOM
 app.post('/makereservationroom',function(req,res) {
-    var result = { "Data":"", "Success":false}; //if not returning rows use this
+    var result = { "Data":"", "Success":false,",reservationId":""}; //if not returning rows use this
+    var user = req.body.User
+    var rooms = req.body.Rooms
+    var stardate = new Date(req.body.Startdate).toISOString().substr(0,9);
+    var enddate = new Date(req.body.Enddate).toISOString().substr(0,9);
+    var totalcost = req.body.Totalcost
+    var card = req.body.Card
+    console.log(stardate);
+    console.log(enddate);
+    console.log(totalcost);
+    console.log(user);
+    console.log(card);
+    console.log(rooms);
 
+    var reservationId;
 
     //some sql query. question marks are replaced [somevar1,somevar2] respectively
-    connection.query("SELECT something  FROM somewhere WHERE firstvar=? AND secondvar=?",
-            [somevar1,somevar2], function(err, rows, fields){
+    connection.query("INSERT INTO RESERVATION (Reservation_id,Start_date,End_date,Total_cost,Is_cancelled,Customer,Payment) VALUES ('NULL',?,?,?,?,?,?)",
+            [stardate,enddate,totalcost,'FALSE',user,card], function(err, result){
                 if(err) {
                     //Data set and returned on sql error
                     console.error('bad query: ' + err.stack);
-                    result["Data"] = "FAILURE";
+                    result["Data"] = "Reservation not added CORRECTLY";
                     res.json(result);
+                    return;
                 } else {
-                    //return "rows" if getting database data
-                    //if no data is to be returned, return result with "Data"set as "success!" or something
-                    //
-                    console.log("RESERVATION RECEIVED!", rows);
-                    res.json(rows);
+                    console.log(result);
+                    console.log(result["insertId"]);
+                    reservationId = result["insertId"];
+                    console.log(rooms);
+                    console.log("RESERVATION TABLE UPDATED IT WORKED");
+                    rooms.forEach(function(room){
+                        console.log("a rooms : ",room);
+                        var number = room["number"];
+                        var location = room["location"]
+                        var extrabed = room["extraBedSelected"]
+                        connection.query("INSERT INTO RESERVATION_ROOM (Reservation_id,Room_no,Location,Has_extra_bed) VALUES (?,?,?,?)",
+                                [reservationId,number,location,extrabed], function(err){
+                                    if(err) {
+                                        //Data set and returned on sql error
+                                        console.error('bad query: ' + err.stack);
+                                        result["Data"] = "FAILURE";
+                                        res.json(result);
+                                        return;
+                                    } else {
+                                        console.log("RESERVATION_ROOM UPDATED");
+                                        //return "rows" if getting database data
+                                        //if no data is to be returned, return result with "Data"set as "success!" or something
+                                        //
+
+                                    }
+                                });
+                    })
+                    if (result["Data"] != "FAILURE") {
+                        result["Data"] = "Reservation added";
+                        result["Success"] = true;
+                        result["reservationId"] = reservationId;
+                        res.json(result);
+                    }
+
                 }
             });
 });
