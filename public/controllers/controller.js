@@ -465,14 +465,14 @@ function PaymentinfoCtrl($scope, $http) {
     console.log('You made it to Paymentinfo. Hello!');
     var curdate = new Date();
 
-    $scope.alert="";
+    $scope.alerts="";
 
     $scope.card = {
-        'cardholdername' : '',
-        'cardnum' : '',
-        'expmonth' : '',
-        'expyear' : '',
-        'cvc' : ''
+        'cardholdername' : "",
+        'cardnum' : "",
+        'expmonth' : "",
+        'expyear' : "",
+        'cvc' : ""
     };
 
     $scope.cardnumDelete = "";
@@ -480,14 +480,13 @@ function PaymentinfoCtrl($scope, $http) {
     $scope.addCard = function () {
         console.log("adding card");
         if (!(/^[A-z ]+$/.test($scope.cardholdername))
-            || $scope.cardholdername.length > 50
-            || $scope.cardnum.length != 16
-            || /^\d+$/.test($scope.cardnum)
-            || $scope.cvv.length >= 4
-            || /^\d+$/.test($scope.cvv)
-            || curdate.valueOf() >= $scope.expdate.valueOf()) {
+            || $scope.card.cardholdername.length > 50
+            || $scope.card.cardnum.length != 16
+            || /^\d+$/.test($scope.card.cardnum)
+            || $scope.card.cvv.length >= 4
+            || /^\d+$/.test($scope.card.cvv)) {
 
-            $scope.alert="One or more fields are invalid";
+            $scope.alerts="One or more fields are invalid";
             return;
         }
 
@@ -514,7 +513,6 @@ function PaymentinfoCtrl($scope, $http) {
                 }
             }
         });
-
     };
 
     $scope.deleteCard = function () {

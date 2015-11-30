@@ -1,7 +1,7 @@
 <html>
 
     <body>
-        <div class="main-container container-fluid text-center" ng-controller="SearchroomsCtrl">
+        <div class="main-container container-fluid text-center" ng-controller="PaymentinfoCtrl">
             <h1 class="bg-info">Payment Information</h1>
 
             <div class="col-sm-12">
@@ -10,7 +10,8 @@
 
             <p>{{alerts}}</p>
 
-            <form name="paymentMethodForm" ng-submit="addCard()" class="form-horizontal" novalidate>
+            <form name="paymentMethodForm" ng-submit="addCard()" role="form" novalidate>
+
                 <div class="form-group">
                     <label class="control-label">NAME_ON_CARD</label>
                     <div class="input-group margin-bottom-sm" ng-class="{'has-success' : paymentMethodForm.cardholder_name.$valid
@@ -52,7 +53,6 @@
                                 type="text"
                                 name="card_number"
                                 ng-model="card.cardnum"
-                                cc-number
                                 required required="required"
                                 class="form-control"
                                 placeholder="CARD_NUMBER"
@@ -170,16 +170,12 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <div class="col-sm-2 pull-right">
-                            <button type="submit" class="btn btn-default pull-right" ng-disabled="paymentMethodForm.$invalid"><span>Add Card</span></button>
-                        </div>
-                    </div>
-
                 </div>
-
-
-                <!-- END OF FORM GROUP-->
+                <div class="form-group">
+                    <div class="col-sm-2 pull-right">
+                        <button type="submit" class="btn btn-default pull-right"  ng-disabled="paymentMethodForm.$invalid" ng-click="addCard()">Add Card</button>
+                    </div>
+                </div>
             </form>
 
             <div class="col-sm-12">
@@ -229,7 +225,6 @@
                     <button type="submit" class="btn btn-default" ng-click="makeReservation()">Go back to Reservation Page</button>
                 </div>
             </div>
-
 
         </div>
         </div>
