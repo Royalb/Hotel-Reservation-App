@@ -6,12 +6,12 @@
 
             <div class="col-sm-12">
                 <h2>Add Card</h2>
-
             </div>
+
+            <p>{{alerts}}</p>
 
             <form name="paymentMethodForm" ng-submit="addCard()" class="form-horizontal" novalidate>
                 <div class="form-group">
-
                     <label class="control-label">NAME_ON_CARD</label>
                     <div class="input-group margin-bottom-sm" ng-class="{'has-success' : paymentMethodForm.cardholder_name.$valid
                     && paymentMethodForm.cardholder_name.$dirty, 'has-error' : paymentMethodForm.cardholder_name.$invalid
@@ -44,7 +44,9 @@
 
                 <div class="form-group">
                     <label for="card_number">CARD_NUMBER</label>
-                    <div class="input-group margin-bottom-sm" ng-class="{'has-success' : paymentMethodForm.card_number.$valid && paymentMethodForm.card_number.$dirty, 'has-error' : paymentMethodForm.card_number.$invalid && !paymentMethodForm.card_number.$pristine, 'has-warning' : paymentMethodForm.card_number.$error.required }">
+                    <div class="input-group margin-bottom-sm" ng-class="{'has-success' : paymentMethodForm.card_number.$valid
+                    && paymentMethodForm.card_number.$dirty, 'has-error' : paymentMethodForm.card_number.$invalid
+                    && !paymentMethodForm.card_number.$pristine, 'has-warning' : paymentMethodForm.card_number.$error.required }">
                         <span class="input-group-addon"><i class="fa fa-lock"></i></span>
                         <input
                                 type="text"
@@ -57,7 +59,8 @@
                                 aria-describedby="card_numberSuccess2Status">
                     </div>
 
-                    <p ng-show="paymentMethodForm.card_number.$error.required && paymentMethodForm.card_number.$dirty" class="bg-danger text-danger">
+                    <p ng-show="paymentMethodForm.card_number.$error.required
+                    && paymentMethodForm.card_number.$dirty" class="bg-danger text-danger">
                         <span>CARD_NUMBER</span> <span>IS_REQUIRED</span>.
                     </p>
                 </div>
@@ -67,7 +70,9 @@
                     <div cc-exp>
                         <div class="col-md-4 col-xs-4" >
                             <label for="exp_month">EXP_MONTH</label>
-                            <div class="input-group margin-bottom-sm" ng-class="{'has-success' : paymentMethodForm.exp_month.$valid && paymentMethodForm.exp_month.$dirty, 'has-error' : paymentMethodForm.exp_month.$invalid && !paymentMethodForm.exp_month.$pristine, 'has-warning' : paymentMethodForm.exp_month.$error.required }">
+                            <div class="input-group margin-bottom-sm" ng-class="{'has-success' : paymentMethodForm.exp_month.$valid
+                            && paymentMethodForm.exp_month.$dirty, 'has-error' : paymentMethodForm.exp_month.$invalid
+                            && !paymentMethodForm.exp_month.$pristine, 'has-warning' : paymentMethodForm.exp_month.$error.required }">
 
                                 <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                 <select
@@ -93,7 +98,8 @@
 
                             </div>
 
-                            <p ng-show="paymentMethodForm.exp_month.$error.required && paymentMethodForm.exp_month.$dirty" class="bg-danger text-danger">
+                            <p ng-show="paymentMethodForm.exp_month.$error.required
+                            && paymentMethodForm.exp_month.$dirty" class="bg-danger text-danger">
                                 <span>EXP_MONTH</span> <span>IS_REQUIRED</span>.
                             </p>
                         </div>
@@ -101,7 +107,9 @@
                           <div class="col-md-4 col-xs-4" >
                                 <!-- EXP YEAR -->
                                 <label for="exp_year" >EXP_YEAR</label>
-                                <div class="input-group margin-bottom-sm" ng-class="{'has-success' : paymentMethodForm.exp_year.$valid && paymentMethodForm.exp_year.$dirty, 'has-error' : paymentMethodForm.exp_year.$invalid && !paymentMethodForm.exp_year.$pristine, 'has-warning' : paymentMethodForm.exp_year.$error.required }">
+                                <div class="input-group margin-bottom-sm" ng-class="{'has-success' : paymentMethodForm.exp_year.$valid
+                                && paymentMethodForm.exp_year.$dirty, 'has-error' : paymentMethodForm.exp_year.$invalid
+                                && !paymentMethodForm.exp_year.$pristine, 'has-warning' : paymentMethodForm.exp_year.$error.required }">
 
                                     <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                                     <select
@@ -124,86 +132,101 @@
                                         <option value="25">2025</option>
                                     </select>
                                 </div>
-                                <p ng-show="paymentMethodForm.exp_year.$error.required && paymentMethodForm.exp_year.$dirty" class="bg-danger text-danger">
+                                <p ng-show="paymentMethodForm.exp_year.$error.required
+                                && paymentMethodForm.exp_year.$dirty" class="bg-danger text-danger">
                                     <span >EXP_YEAR</span> <span >IS_REQUIRED</span>.
                                 </p>
                           </div>
 
+                    </div>
+
+                    <div class="col-md-4 col-xs-4" >
+                        <label for="cvc">CARD_CVC</label>
+                        <div class="input-group margin-bottom-sm" ng-class="{'has-success' : paymentMethodForm.cvc.$valid
+                        && paymentMethodForm.cvc.$dirty, 'has-error' : paymentMethodForm.cvc.$invalid
+                        && !paymentMethodForm.cvc.$pristine, 'has-warning' : paymentMethodForm.cvc.$error.required }">
+                            <span class="input-group-addon"><i class="fa fa-lock"></i></span>
+                            <input
+                                    type="text"
+                                    name="cvc"
+                                    ng-model="card.cvc"
+                                    required required="required"
+                                    class="form-control"
+                                    placeholder="CARD_CVC"
+                                    cc-cvc>
+
                         </div>
+                        <p ng-show="paymentMethodForm.cvc.$error.required && paymentMethodForm.cvc.$dirty" class="bg-danger text-danger">
+                            <span >CARD_CVC</span> <span >IS_REQUIRED</span>.
+                        </p>
+                    </div>
 
-                        <div class="col-md-4 col-xs-4" >
-                            <label for="cvc">CARD_CVC</label>
-                            <div class="input-group margin-bottom-sm" ng-class="{'has-success' : paymentMethodForm.cvc.$valid && paymentMethodForm.cvc.$dirty, 'has-error' : paymentMethodForm.cvc.$invalid && !paymentMethodForm.cvc.$pristine, 'has-warning' : paymentMethodForm.cvc.$error.required }">
-                                <span class="input-group-addon"><i class="fa fa-lock"></i></span>
-                                <input
-                                        type="text"
-                                        name="cvc"
-                                        ng-model="card.cvc"
-                                        cc-cvc
-                                        required required="required"
-                                        class="form-control"
-                                        placeholder="CARD_CVC">
-
-                            </div>
-                            <p ng-show="paymentMethodForm.cvc.$error.required && paymentMethodForm.cvc.$dirty" class="bg-danger text-danger">
-                                <span >CARD_CVC</span> <span >IS_REQUIRED</span>.
+                    <div class="row">
+                        <div class="col-md-8 col-xs-8">
+                            <!-- INVALID PAIR : EXP MONTH / EXP YEAR  -->
+                            <p ng-show="paymentMethodForm.$error.ccExp && paymentMethodForm.exp_month.$dirty && paymentMethodForm.exp_year.$dirty" class="bg-danger text-danger">
+                                <span>EXP_MONTH_EXP_YEAR</span> <span>IS_INVALID</span>.
                             </p>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-8 col-xs-8">
-                                <!-- INVALID PAIR : EXP MONTH / EXP YEAR  -->
-                                <p ng-show="paymentMethodForm.$error.ccExp && paymentMethodForm.exp_month.$dirty && paymentMethodForm.exp_year.$dirty" class="bg-danger text-danger">
-                                    <span>EXP_MONTH_EXP_YEAR</span> <span>IS_INVALID</span>.
-                                </p>
-                            </div>
                         </div>
                     </div>
 
-                        <div class="col-sm-2 text-right">
+                    <div class="form-group">
+                        <div class="col-sm-2 pull-right">
                             <button type="submit" class="btn btn-default pull-right" ng-disabled="paymentMethodForm.$invalid"><span>Add Card</span></button>
                         </div>
+                    </div>
+
+                </div>
+
 
                 <!-- END OF FORM GROUP-->
             </form>
 
-            <div class="col-sm-6">
+            <div class="col-sm-12">
                 <h2>Delete Card</h2>
             </div>
 
+
             <form name="paymentMethodForm2" ng-submit="deleteCard()" class="form-horizontal" novalidate>
 
-                <label for="card_number_delete">CARD_NUMBER</label>
-                <div class="input-group margin-bottom-sm" ng-class="{'has-success' : paymentMethodForm.card_number.$valid
-                        && paymentMethodForm.card_number.$dirty, 'has-error' : paymentMethodForm.card_number.$invalid
-                        && !paymentMethodForm.card_number.$pristine, 'has-warning' : paymentMethodForm.card_number.$error.required }">
-                    <span class="input-group-addon"><i class="fa fa-lock"></i></span>
-                    <input
-                            type="text"
-                            name="card_number_delete"
-                            ng-model="cardnumDelete"
-                            cc-number
-                            required required="required"
-                            class="form-control"
-                            placeholder="CARD_NUMBER"
-                            aria-describedby="card_numberSuccess2Status">
-                </div>
+                <div class="form-group">
+                    <label for="card_number_delete">CARD_NUMBER</label>
+                    <div class="input-group margin-bottom-sm" ng-class="{'has-success' : paymentMethodForm2.card_number_delete.$valid
+                            && paymentMethodForm2.card_number_delete.$dirty, 'has-error' : paymentMethodForm2.card_number_delete.$invalid
+                            && !paymentMethodForm2.card_number_delete.$pristine, 'has-warning' : paymentMethodForm2.card_number_delete.$error.required }">
+                        <span class="input-group-addon"><i class="fa fa-lock"></i></span>
+                        <input
+                                type="text"
+                                name="card_number_delete"
+                                ng-model="cardnumDelete"
+                                cc-number
+                                required required="required"
+                                class="form-control"
+                                placeholder="CARD_NUMBER"
+                                aria-describedby="card_numberSuccess2Status">
+                    </div>
+                    <p ng-show="paymentMethodForm2.card_number_delete.$error.required && paymentMethodForm2.card_number_delete.$dirty" class="bg-danger text-danger">
+                        <span>CARD_NUMBER</span> <span>IS_REQUIRED</span>.
+                    </p>
 
-                <p ng-show="paymentMethodForm.card_number.$error.required && paymentMethodForm.card_number.$dirty" class="bg-danger text-danger">
-                    <span>CARD_NUMBER</span> <span>IS_REQUIRED</span>.
-                </p>
+                </div>
 
                 <div class="form-group">
-                    <div class=" col-sm-2 ">
-                        <button type="submit" class="btn btn-default" ng-disabled="paymentMethodForm.$invalid"><span>Delete Card</span></button>
+                    <div class="col-sm-2 pull-right">
+                        <button type="submit" class="btn btn-default" ng-disabled="paymentMethodForm2.$invalid"><span>Delete Card</span></button>
                     </div>
                 </div>
+
+
             </form>
 
 
             <div class="form-group">
-                <div class="col-sm-5 text-right ">
-                    <button type="submit" class="btn btn-default" ng-click="goBackToReservation()">Go back to Reservation Page</button>
+                <div class="col-sm-4 "> </div>
+                <div class="col-sm-4 "> </div>
+
+                <div class="col-sm-4 ">
+                    <button type="submit" class="btn btn-default" ng-click="makeReservation()">Go back to Reservation Page</button>
                 </div>
             </div>
 

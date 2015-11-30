@@ -90,7 +90,7 @@
 					<div class="form-group">
 						<label class="control-label col-sm-2" style="margin-top: 10px">Use Card:</label>
 						<select class="col-sm-4 myDropdown" name="repeatSelect" id="repeatSelect" ng-model="selectedCard">
-							<option ng-repeat="card in cardlist" value="{{card.Card_no}}">Card Number: {{card.Card_no}}</option>
+							<option ng-repeat="card in cardlist" value="{{card.Card_no}}">{{card.Card_no}}</option>
 						</select>
 
 						<button class="control-label" style="margin-top: 10px;" ng-click="editPaymentInfo()" >EDIT PAYMENT INFORMATION</button>

@@ -1,7 +1,10 @@
-var express = require('express');
-var app = express();
+var express    = require('express');
+var app        = express();
 var bodyParser = require('body-parser');
 var mysql      = require('mysql');
+
+//var card       = require('angular-credit-cards');
+
 var connection = mysql.createConnection({
     host     : 'academic-mysql.cc.gatech.edu',
     user     : 'cs4400_Group_44',
@@ -85,7 +88,7 @@ app.post('/register',function(req,res) {
     console.log("resule: ", result);
 });
 
-
+// REVIEW FUNCTIONALITIES
 app.post('/givereview',function(req,res) {
     var result = { "Data":"", "Success":false};
     //console.log("comment:",req.body.Comment);
@@ -128,17 +131,15 @@ app.post('/viewreview',function(req,res) {
 });
 
 
-//----------------------------------tobedone------------------------------------
+//@@TODO BY JENNA: SEARCH ROOM, MAKE RESERVATION, ADD CARD, DELETE CARD, RETRIEVE CARD, UPDATE RESERVATION, CANCEL RESERVATION
 //------------------------------------------------------------------------------
-//@TODO Search room, make reservation, and put up reservation confirmation screen
+
+//@TODO IMPLEMENT MORE COMPLEX QUERY THAT SEARCHES ONILY THE ROOMS THAT HAVE NOT BEEN RESERVED (DO NOT EXIST IN RESERVATION_ROOM)
 app.post('/searchrooms',function(req,res) {
     var result = { "Data":"", "Success": "false"}; //if not returning rows use this
 
     var startdate = req.body.Startdate;
     var enddate = req.body.Enddate;
-
-    console.log("startdate:",enddate);
-    console.log("enddate:",startdate);
 
     connection.query("SELECT * FROM ROOM WHERE Location=?",
         [req.body.Location], function(err, rows, fields){
@@ -155,10 +156,10 @@ app.post('/searchrooms',function(req,res) {
         });
 });
 
-app.post('/makereservation',function(req,res) {
+//@TODO: THIS ONE IS FOR INSERTING INTO RESERVATION_ROOM
+app.post('/makereservationroom',function(req,res) {
     var result = { "Data":"", "Success":false}; //if not returning rows use this
-    //var somevar1 = req.body.somevar;
-    //var somevar2 = req.body.somevar;
+
 
     //some sql query. question marks are replaced [somevar1,somevar2] respectively
     connection.query("SELECT something  FROM somewhere WHERE firstvar=? AND secondvar=?",
@@ -172,62 +173,31 @@ app.post('/makereservation',function(req,res) {
                     //return "rows" if getting database data
                     //if no data is to be returned, return result with "Data"set as "success!" or something
                     //
-                    console.log("RECEIVED!", rows);
+                    console.log("RESERVATION RECEIVED!", rows);
                     res.json(rows);
                 }
             });
 });
 
-
-app.post('/reservationconformation',function(req,res) {
-    var result = { "Data":"", "Success":false}; //if not returning rows use this
-    //var somevar1 = req.body.somevar;
-    //var somevar2 = req.body.somevar;
-
-    //some sql query. question marks are replaced [somevar1,somevar2] respectively
-    connection.query("SELECT something  FROM somewhere WHERE firstvar=? AND secondvar=?",
-            [somevar1,somevar2], function(err, rows, fields){
-                if(err) {
-                    //Data set and returned on sql error
-                    console.error('bad query: ' + err.stack);
-                    result["Data"] = "FAILURE";
-                    res.json(result);
-                } else {
-                    //return "rows" if getting database data
-                    //if no data is to be returned, return result with "Data"set as "success!" or something
-                    //
-                    console.log("RECEIVED!", rows);
-                    res.json(rows);
-                }
-            });
-});
-
-
-//@TODO ADD CARD QUERY
 app.post('/savecard',function(req,res) {
     var result = { "Data":"", "Success":false}; //if not returning rows use this
 
     var Name = req.body.Name;
     var CardNum = req.body.CardNum;
-    var ExpDate = req.body.Expdate;
+    var Expmonth = req.body.Expmonth;
+    var Expyear = req.body.Expyear;
     var curUser = req.body.Customer;
     var cvv = req.body.cvv;
 
-    //INSERT INTO CUSTOMER (Email,Cust_username,Password) VALUES(?,?,?)"
-    //INSERT INTO PAYMENT_INFORMATION(
-
-    //some sql query question marks are replaced [somevar1,somevar2] respectively
-    connection.query("INSERT INTO PAYMENT_INFORMATION (Name, CVV, Exp_date, Customer, Card_no) VALUES (?,?,?,?,?)",
-            [Name, CardNum, ExpDate, curUser, cvv], function(err, rows, fields){
+    // @TODO UPDATE SQL TABLE
+    connection.query("INSERT INTO PAYMENT_INFORMATION (Name, CVV, Exp_date, Customer, Card_no) VALUES (?,?,?,?,?,?)",
+            [Name, CardNum, Expmonth, Expyear, curUser, cvv], function(err, rows, fields){
                 if(err) {
                     //Data set and returned on sql error
-                    console.error('bad query: ' + err.stack);
+                    console.error('Card not saved: ' + err.stack);
                     result["Data"] = "FAILURE";
                     res.json(result);
                 } else {
-                    //return "rows" if getting database data
-                    //if no data is to be returned, return result with "Data"set as "success!" or something
-                    //
                     result["Success"] = true;
                     console.log("RECEIVED!", rows);
                     res.json(result);
@@ -235,8 +205,6 @@ app.post('/savecard',function(req,res) {
             });
 });
 
-
-//@TODO DELETE CARD QUERY
 app.post('/deletecard',function(req,res) {
     var result = { "Data":"", "Success":false}; //if not returning rows use this
 
@@ -246,15 +214,11 @@ app.post('/deletecard',function(req,res) {
     connection.query("DELETE FROM PAYMENT_INFORMATION WHERE Card_no=?",
             [somevar1,somevar2], function(err, rows, fields){
                 if(err) {
-                    //Data set and returned on sql error
-                    console.error('bad query: ' + err.stack);
-                    //result["Data"] = "FAILURE";
+                    console.error('CARD DELETION FAIL!: ' + err.stack);
                     res.json(result);
                 } else {
-                    //return "rows" if getting database data
-                    //if no data is to be returned, return result with "Data"set as "success!" or something
                     result["Success"] = true;
-                    console.log("RECIEVED!", rows);
+                    console.log("CARD SUCCESSFULLY DELETED!", rows);
                     res.json(result);
                 }
             });
@@ -264,6 +228,7 @@ app.post('/deletecard',function(req,res) {
 app.post('/getcardinfo',function(req,res) {
     var result = { "Data":"", "Success":false}; //if not returning rows use this
     var user = req.body.User;
+    console.log(user);
 
     //some sql query question marks are replaced [somevar1,somevar2] respectively
     connection.query("SELECT Card_no FROM PAYMENT_INFORMATION WHERE Customer=?",
@@ -272,11 +237,71 @@ app.post('/getcardinfo',function(req,res) {
                     console.error('bad query: ' + err.stack);
                     res.json(result);
                 } else {
-                    console.log("RECIEVED!", rows);
+                    result["Success"] = true;
+                    console.log("CARD INFORMATION!", rows);
                     res.json(rows);
                 }
             });
 });
+
+//@TODO update reservation: SELECT from RSERVATION_ROOM, then UPDATE?
+app.post('/retrieveReservationRoom',function(req,res) {
+    var result = { "Data":"", "Success":false}; //if not returning rows use this
+
+    var reservationId = req.body.reservationId;
+    console.log(user);
+
+    //some sql query question marks are replaced [somevar1,somevar2] respectively
+    connection.query("SELECT Card_no FROM PAYMENT_INFORMATION WHERE Customer=?",
+        [reservationId], function(err, rows, fields){
+            if(err) {
+                console.error('bad query: ' + err.stack);
+                res.json(result);
+            } else {
+                console.log("CARD INFORMATION!", rows);
+                res.json(rows);
+            }
+        });
+});
+
+app.post('/updateReservationRoom',function(req,res) {
+    var result = { "Data":"", "Success":false}; //if not returning rows use this
+
+    var user = req.body.User;
+    console.log(user);
+
+    //some sql query question marks are replaced [somevar1,somevar2] respectively
+    connection.query("SELECT Card_no FROM PAYMENT_INFORMATION WHERE Customer=?",
+        [user], function(err, rows, fields){
+            if(err) {
+                console.error('bad query: ' + err.stack);
+                res.json(result);
+            } else {
+                console.log("CARD INFORMATION!", rows);
+                res.json(rows);
+            }
+        });
+});
+
+app.post('/cancelReservationRoom',function(req,res) {
+    var result = { "Data":"", "Success":false}; //if not returning rows use this
+
+    var user = req.body.User;
+    console.log(user);
+
+    //some sql query question marks are replaced [somevar1,somevar2] respectively
+    connection.query("SELECT Card_no FROM PAYMENT_INFORMATION WHERE Customer=?",
+        [user], function(err, rows, fields){
+            if(err) {
+                console.error('bad query: ' + err.stack);
+                res.json(result);
+            } else {
+                console.log("CARD INFORMATION!", rows);
+                res.json(rows);
+            }
+        });
+});
+
 
 
 // does not do anything probably remove this.
