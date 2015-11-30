@@ -57,7 +57,7 @@ var app = angular.module('FancyHotel',['ngRoute'])
 
 //controller definitions -------------------------------------------------------
 app.controller('LoginCtrl',['$scope','$http', LoginCtrl]);
-app.controller('FunctionalityCtrl',['$scope','$http', FunctionalityCtrl]);
+app.controller('FunctionalityCtrl',['$scope','$http','mainPageMessageService', FunctionalityCtrl]);
 app.controller('RegistrationCtrl',['$scope','$http', RegistrationCtrl]);
 app.controller('SearchroomsCtrl',['$scope','$http','availableroomsService', SearchroomsCtrl]);
 app.controller('MakereservationCtrl',['$scope','$http','availableroomsService','reservedRoomsService', 'reservationIdService', MakereservationCtrl]);
@@ -69,7 +69,7 @@ app.controller('MpopularroomCtrl',['$scope','$http', MpopularroomCtrl]);
 app.controller('MreserationreportCtrl',['$scope','$http', MreserationreportCtrl]);
 app.controller('MrevenuereportCtrl',['$scope','$http', MrevenuereportCtrl]);
 app.controller('ReservationconfirmationCtrl',['$scope','$http', 'reservationIdService', ReservationconfirmationCtrl]);
-app.controller('UpdatereservationCtrl',['$scope','$http', UpdatereservationCtrl]);
+app.controller('UpdatereservationCtrl',['$scope','$http', 'mainPageMessageService', UpdatereservationCtrl]);
 
 // factories -------------------------------------------------------------------
 app.factory('availableroomsService', function () {
@@ -126,6 +126,20 @@ app.factory('reservationIdService', function () {
         }
     };
 });
+
+app.factory('mainPageMessageService', function () {
+    var message = "Welcome!";
+
+    return {
+        saveMessage: function (data) {
+            message = data;
+        },
+        getMessage: function () {
+            return message;
+        }
+    };
+});
+
 
 
 // controllers -----------------------------------------------------------------
@@ -186,8 +200,10 @@ function LoginCtrl($scope, $http) {
     };
 }
 
-function FunctionalityCtrl($scope, $http) {
+function FunctionalityCtrl($scope, $http, mainPageMessageService) {
     console.log('You made it. Hello!');
+
+    $scope.message = mainPageMessageService.getMessage();
 }
 
 
@@ -548,7 +564,7 @@ function ReservationconfirmationCtrl($scope, $http, reservationIdService) {
 
 var testdata;
 
-function UpdatereservationCtrl($scope, $http) {
+function UpdatereservationCtrl($scope, $http, mainPageMessageService) {
     console.log('You made it to updatereservation. Hello!');
 
     $scope.reservationId = "";
@@ -649,6 +665,7 @@ function UpdatereservationCtrl($scope, $http) {
 
         $http.post('/updateReservation', body).success(function(res) {
             if (res.Success) {
+                mainPageMessageService.saveMessage("Your reservation has been successfully updated");
                 $scope.goToMainMenu();
             }
         });
