@@ -3,15 +3,6 @@
 	<script type="text/javascript" src="js/bootstrap.min.js"></script>
 
     <script src="js/checklist-model.js"></script>
-	<script>
-//		$(document).ready(function() {
-//			$(".dropdown-toggle").dropdown();
-//
-//			$("#cards").on("click", "li a", function() {
-//				$("#dropdown_title").html($(this).text());
-//			});
-//		});
-	</script>
 
     <body>
         <div class="main-container container-fluid text-center" ng-controller="MakereservationCtrl">
@@ -55,7 +46,7 @@
 						<th># Persons Allowed</th>
 						<th>Cost per day</th>
 						<th>Cost of extra bed per day</th>
-						<th>Extra bed</th>
+						<th>Select Extra bed</th>
 					</thead>
 					<tbody>
 
@@ -113,11 +104,8 @@
 						<div class=" col-sm-5 text-right ">
 							<button type="submit" class="btn btn-default" ng-click="submitReservation()">Submit</button>
 						</div>
-
-					</div>
 				</form>
 			</div>
 		</div>
-
     </body>
 </html>

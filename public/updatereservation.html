@@ -3,90 +3,90 @@
         <div class="main-container container-fluid text-center" ng-controller="UpdatereservationCtrl">
             <h1 class="bg-info">Update Reservation</h1>
 
-            <form class="form-horizontal" role="form">
-                <div class="form-group">
-                    <label class="control-label col-sm-2">Reservation ID:</label>
+
+                <label class="control-label col-sm-4">Reservation ID:</label>
+                <div class="col-sm-4">
+                    <input type="text" class="form-control" ng-model="reservationId">
+                </div>
+
+                <div class="col-sm-4 text-right" ng-init="obj2={clicked:false}">
+                    <button type="submit" class="btn btn-default" ng-click=" retrieveReservation(); obj2.clicked = true;">Search</button>
+                </div>
+
+
+                <div ng-show="obj2.clicked">
+
+                    <div class="col-sm-12 " style="margin-top: 20px;"><p> {{reservationLookupMessage}}</p></div>
+
+                    <label class="control-label col-sm-2" style="margin-top: 20px" >Current Start date:</label>
+                    <div class="col-sm-4 boxed" style="margin-top: 20px" ng-bind="oldstartdate | date:'MM/dd/yyyy'"></div>
+
+
+                    <label class="control-label col-sm-2" style="margin-top: 20px" >Current End date:</label>
+                    <div class="col-sm-4 boxed" style="margin-top: 20px" ng-bind="oldenddate | date:'MM/dd/yyyy'"></div>
+
+
+                    <label class="control-label col-sm-2">New Start date:</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" ng-model="reservationId" placeholder="xxxxxx">
+                        <input type="date" class="form-control" ng-model="newstartdate" placeholder="x/xx/xxxx" style="text-align: right">
+                    </div>
+                    <label class="control-label col-sm-2">New End date:</label>
+                    <div class="col-sm-4">
+                        <input type="date" class="form-control" ng-model="newenddate" placeholder="x/xx/xxxx" style="text-align: right">
                     </div>
 
-                    <div class="col-sm-2 text-right" ng-init="obj={clicked:false}">
-                        <button type="submit" class="btn btn-default" ng-if="!obj.clicked" ng-click="retrieveReservation(); obj.clicked = true">Search</button>
-                    </div>
-                </div>
-
-                <div ng-show="obj.clicked">
-
-                    <div class="form-group">
-                        <label class="control-label col-sm-2" style="margin-top: 20px" >Current Start date:</label>
-                        <div class="col-sm-4 boxed" style="margin-top: 20px" ng-bind="startdate | date:'MM/dd/yyyy'"></div>
-
-                        <label class="control-label col-sm-2" style="margin-top: 20px" >Current End date:</label>
-                        <div class="col-sm-4 boxed" style="margin-top: 20px" ng-bind="enddate | date:'MM/dd/yyyy'"></div>
+                    <div class="col-sm-12 " style="margin-top: 20px"ng-init="obj3={clicked:false}">
+                        <button type="submit" class="btn btn-default" ng-click="searchAvailability(); obj3.clicked = true;">Search Availability</button>
                     </div>
 
+                    <div class="col-sm-12 " style="margin-top: 20px;"><p> {{roomLookupMessage}}</p></div>
 
-                    <div class="form-group">
-                        <label class="control-label col-sm-2">New Start date:</label>
-                        <div class="col-sm-4">
-                            <input type="date" class="form-control" ng-model="newstartdate" placeholder="x/xx/xxxx">
+
+                    <div ng-show="obj3.clicked && showRoom">
+
+
+                            <!--<p> Rooms are not available. Please select different dates. </p>-->
+                            <!--<p> Rooms are available. Please confirm details below before submitting. </p>-->
+
+                        <div class="form-group">
+                            <table class="table table-responsive table-hover table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Room number</th>
+                                    <th>Room Category</th>
+                                    <th># Persons Allowed</th>
+                                    <th>Cost per day</th>
+                                    <th>Cost of extra bed per day</th>
+                                    <th>Select Extra Bed</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr ng-repeat="room in roomlist">
+                                    <td>{{room.number}}</td>
+                                    <td>{{room.category}}</td>
+                                    <td>{{room.pallowed}}</td>
+                                    <td>{{room.costperday}}</td>
+                                    <td>{{room.costextrabed}}</td>
+                                    <td><input type="checkbox" ng-model="room.extraBedSelected"></input></td>
+                                    <!-- <td><input type="checkbox" checklist-model="user.roles" checklist-value="room.number"></input></td> -->
+                                </tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <label class="control-label col-sm-2">New End date:</label>
-                        <div class="col-sm-4">
-                            <input type="date" class="form-control" ng-model="newenddate" placeholder="x/xx/xxxx">
-                        </div>
-                    </div>
 
-                    <div class="form-group">
+                        <div class="row">
+                            <label class="control-label col-sm-4" style="margin-top: 20px">Total Cost Updated:</label>
+                            <div class="col-sm-4 boxed" style="margin-top: 20px" placeholder="$0"> {{calculateTotalCost() }}</div>
+                        </div>
+
+                        <div class="col-sm-7"></div>
                         <div class="col-sm-5 text-right ">
-                            <button type="submit" class="btn btn-default" ng-click="searchAvailability()">Search Availability</button>
+                            <button type="submit" class="btn btn-default" ng-click="updateReservation()">Submit</button>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <p> {{successFailureMessage}}</p>
-                        <!--<p> Rooms are not available. Please select different dates. </p>-->
-                        <!--<p> Rooms are available. Please confirm details below before submitting. </p>-->
-                    </div>
-
-                    <div class="form-group">
-                        <table class="table table-responsive table-hover table-striped">
-                            <thead>
-                            <tr>
-                                <th>Room number</th>
-                                <th>Room Category</th>
-                                <th># Persons Allowed</th>
-                                <th>Cost per day</th>
-                                <th>Cost of extra bed per day</th>
-                                <th>Select Extra Bed</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr ng-repeat="room in roomlist">
-                                <td>{{room.number}}</td>
-                                <td>{{room.category}}</td>
-                                <td>{{room.pallowed}}</td>
-                                <td>{{room.costperday}}</td>
-                                <td>{{room.costextrabed}}</td>
-                                <!-- <td><input type="checkbox" checklist-model="user.roles" checklist-value="room.number"></input></td> -->
-                                <td><input type="checkbox" ng-model="room.selected"></input></td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="control-label col-sm-2" style="margin-top: 20px">Total Cost Updated:</label>
-                        <div class="col-sm-4 boxed" style="margin-top: 20px" placeholder="$0"> {{calculateTotalUpdatedCost() }}</div>
-                    </div>
-
-
-
-                    <div class="col-sm-5 text-right ">
-                        <button type="submit" class="btn btn-default" ng-click="updateReservation()">Submit</button>
-                    </div>
                 </div>
-            </form>
+            </div>
         </div>
     </body>
 </html>

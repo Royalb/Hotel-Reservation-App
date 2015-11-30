@@ -164,6 +164,9 @@ function AppCtrl($scope, $http, $location) {
     $scope.ReservationConfirmation = function() {
         $location.path("/reservationconfirmation");
     };
+    $scope.goToMainMenu = function() {
+        $location.path("/functionality");
+    }
 }
 
 function LoginCtrl($scope, $http) {
@@ -171,14 +174,11 @@ function LoginCtrl($scope, $http) {
         console.log($scope.user);
         $http.post('/login', $scope.user).success(function(res){
             if (res) {
-                console.log(res);
                 console.log("curUser: ", $scope.$parent.curUser);
-
                 $scope.setcurUser($scope.user.Username);
-
                 console.log("curUser: ", $scope.$parent.curUser);
-                $scope.loginResponse = res["Data"];
-                if(res["Success"] == "true"){
+                $scope.loginResponse = res.Message;
+                if(res.Success == true){
                     $scope.loginSucess();
                 }
             }
@@ -223,8 +223,8 @@ function RegistrationCtrl($scope, $http) {
                 $scope.setcurUser($scope.user.Username);
 
                 console.log("curUser: ", $scope.$parent.curUser);
-                $scope.registerResponse = res["Data"];
-                if(res["Success"]){
+                $scope.registerResponse = res.Message;
+                if(res.Success){
                     $scope.loginSucess();
                 }
             }
@@ -295,6 +295,8 @@ function SearchroomsCtrl($scope, $http, availableroomsService) {
     $scope.startdate = $scope.curdate;
     $scope.enddate = new Date(new Date().setHours(24,0,0,0));
 
+    $scope.message = "";
+
     $scope.search = function () {
         if ($scope.startdate.valueOf() >= $scope.enddate.valueOf()) {
             $scope.message = " Please choose end date after start date.";
@@ -310,12 +312,14 @@ function SearchroomsCtrl($scope, $http, availableroomsService) {
             "Location":$scope.curSelectedLoc.name};
 
         $http.post('/searchrooms', body).success(function(res) {
-            if (res) {
+            if (res.Success) {
                 console.log("Search worked");
-                availableroomsService.saveroomResponse(res);
+                availableroomsService.saveroomResponse(res.Data);
                 availableroomsService.savestartdate($scope.startdate);
                 availableroomsService.saveenddate($scope.enddate);
                 $scope.makeReservation();
+            } else {
+                $scope.message = "No rooms were found. Please choose different dates";
             }
         });
     }
@@ -418,7 +422,7 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
             $scope.message = "Must select at least one card";
             return;
         }
-        if ($scope.selectedRooms.lenght > 0) {
+        if ($scope.selectedRooms.length > 0) {
             $scope.message = "Must select at least one room";
             return;
         }
@@ -542,6 +546,7 @@ function ReservationconfirmationCtrl($scope, $http, reservationIdService) {
     $scope.reservationId = reservationIdService.getReservationId();
 }
 
+var testdata;
 
 function UpdatereservationCtrl($scope, $http) {
     console.log('You made it to updatereservation. Hello!');
@@ -549,77 +554,105 @@ function UpdatereservationCtrl($scope, $http) {
     $scope.reservationId = "";
     $scope.location= "";
 
-    $scope.startdate = new Date();
-    $scope.enddate = new Date();
-
+    $scope.curdate = new Date();
+    $scope.oldstartdate = new Date();
+    $scope.oldenddate = new Date();
     $scope.newstartdate = new Date();
-    $scope.newenddate = new Date();
+    $scope.newenddate = new Date(new Date().setHours(24,0,0,0));
 
-
-    //var body = {
-    //    //@TODO change expiration date to expiration month/year in SQL
-    //    "Name": $scope.card.cardholdername,
-    //    "CardNum": $scope.card.cardnum,
-    //    "Expmonth": $scope.card.expmonth,
-    //    "Expyear": $scope.card.expyear,
-    //    "Customer": $scope.curUser,
-    //    "cvv": $scope.card.cvv};
+    $scope.reservationLookupMessage = "";
+    $scope.roomLookupMessage = "";
 
 
     // post that sends data(what's in body) to sqlserver
     $scope.retrieveReservation = function() {
         var body = {
-            "ReservationId": $scope.reservationId
+            "reservationId": $scope.reservationId
         };
 
-        $http.post('/retrieveReservationRoom', body).success(function(res) {
-            if (res) {
-                console.log("Received something");
-                if (res["Success"]) {
-                    $scope.response = 'Card Saved successfully';
-                    //@TODO SET STARTDATE AND ENDDATE
-                } else {
-                    $scope.response = 'Something went wrong.';
-                }
+        $http.post('/retrieveReservation', body).success(function(res) {
+            if (res.Success) {
+                testdata = res;
+                console.log(res);
+                $scope.oldstartdate = res.Data[0]["Start_date"];
+                $scope.oldenddate = res.Data[0]["End_date"];
+                $scope.reservationLookupMessage = "Reservation is found! Please enter new dates.";
+            } else {
+                $scope.reservationLookupMessage = "No reservations were found. Please enter different Reservation ID.";
             }
         });
     };
 
-    //@TODO IMPLEMENT MORE COMPLEX QUERY; SEARCH ALL ROOMS THAT MATCH CRITERION(LOCATION, DATES)
-    //@TODO REUSE SEARCH ROOM?
+    $scope.roomlist = [];
+    $scope.showRoom = false;
 
     $scope.searchAvailability = function() {
+
+        console.log($scope.startdate);
+        console.log($scope.enddate);
+
+        if ($scope.newstartdate.valueOf() >= $scope.newenddate.valueOf()) {
+            $scope.roomLookupMessage = " Please choose end date after start date.";
+            return;
+        }
+        if ($scope.startdate < $scope.curdate) {
+            $scope.roomLookupMessage = "Can not choose dates in the past";
+            return;
+        }
+
         var body = {
-            "ReservationId": $scope.reservationId
+            "Location": "Atlanta", //@TODO FIX AFTER IMPLEMENTING COMPLEX QUERY
+            "reservationId": $scope.reservationId,
+            "newstartdate": $scope.newstartdate,
+            "newenddate": $scope.newenddate
         };
 
         $http.post('/searchrooms', body).success(function(res) {
-            if (res) {
-                console.log("Received something");
-                if (res["Success"]) {
-                    $scope.response = 'Card Saved successfully';
-
-                } else {
-                    $scope.response = 'Something went wrong.';
+            if (res.Success) {
+                $scope.showRoom = true;
+                $scope.roomLookupMessage = 'Rooms are available. Please confirm details below before submitting.';
+                // populate roomlist
+                for (var i = 0; i < res.Data.length; i++) {
+                    $scope.roomlist.push({
+                            number: res.Data[i].Room_no,
+                            category: res.Data[i].Room_category,
+                            pallowed: res.Data[i].No_people,
+                            costperday: res.Data[i].Cost_per_day,
+                            costextrabed: res.Data[i].Cost_extra_bed_per_day,
+                            extraBedSelected: false}
+                    )
                 }
+            } else {
+                $scope.roomLookupMessage = 'No rooms are available. Please modify your search.';
             }
         });
-
-
     };
 
-    // post that sends data(what's in body) to sqlserver
-    $http.post('/updateReservationRoom', body).success(function(res) {
-        if (res) {
-            console.log("Received something");
-            if (res["Success"]) {
-                $scope.response = 'Card Saved successfully';
+    $scope.calculateTotalCost = function() {
+        var daysofStay = $scope.newstartdate - $scope.newenddate;
+        var totalcost = 0;
+        angular.forEach($scope.roomlist, function(selroom, key) {
+            totalcost += selroom.costperday;
+            if (selroom.extraBedSelected) {
+                totalcost += selroom.costextrabed;}
+        });
+        return totalcost;
+    };
 
-            } else {
-                $scope.response = 'Something went wrong.';
+    $scope.updateReservation = function() {
+
+        var body = {
+            "Reservationid": $scope.reservationId,
+            "Startdate": $scope.newstartdate,
+            "Enddate": $scope.newenddate
+        };
+
+        $http.post('/updateReservation', body).success(function(res) {
+            if (res.Success) {
+                $scope.goToMainMenu();
             }
-        }
-    });
+        });
+    };
 }
 
 //@TODO RESERVATION ID LOOKUP
