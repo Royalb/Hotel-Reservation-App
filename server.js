@@ -34,7 +34,8 @@ app.post('/login',function(req,res) {
     var Username = req.body.Username;
     var result = { "Data":[], "Success":false, "Message":"" };
 
-        connection.query("(SELECT Cust_username AS Username,PASSWORD FROM CUSTOMER WHERE Cust_username=? AND PASSWORD=? LIMIT 1)UNION(SELECT Man_username AS Username,PASSWORD FROM MANAGEMENT WHERE Man_username=? AND PASSWORD=? LIMIT 1)",
+        connection.query("(SELECT Cust_username AS Username,PASSWORD FROM CUSTOMER WHERE Cust_username=? AND PASSWORD=? " +
+            "LIMIT 1)UNION(SELECT Man_username AS Username,PASSWORD FROM MANAGEMENT WHERE Man_username=? AND PASSWORD=? LIMIT 1)",
                 [req.body.Username,req.body.Password,req.body.Username,req.body.Password], function(err, rows, fields){
                     if(err) {
                         console.error('bad query: ' + err.stack);
@@ -124,7 +125,7 @@ app.post('/viewreview',function(req,res) {
                     result["Data"] = "REVIEW RETRIVAL FAILURE";
                     res.json(result);
                 } else {
-                    console.log("REVIEWS RECIEVED!", rows);
+                    console.log("REVIEWS RECEIVED!", rows);
                     console.log("resule: ", result);
                     res.json(rows);
                 }
@@ -132,18 +133,13 @@ app.post('/viewreview',function(req,res) {
 });
 
 
-//@@TODO BY JENNA: SEARCH ROOM, MAKE RESERVATION, ADD CARD, DELETE CARD, RETRIEVE CARD, UPDATE RESERVATION, CANCEL RESERVATION
-//------------------------------------------------------------------------------
-
-//@TODO IMPLEMENT MORE COMPLEX QUERY THAT SEARCHES ONILY THE ROOMS THAT HAVE NOT BEEN RESERVED (DO NOT EXIST IN RESERVATION_ROOM)
+// MAKE RESERVATION QUERY PART 1: GET ROOMS THAT HAVE NOT BEEN RESERVED
 app.post('/searchrooms',function(req,res) {
     var result = { "Data":[], "Success": false}; //if not returning rows use this
 
-    var startdate = req.body.Startdate;
-    var enddate = req.body.Enddate;
-
-    connection.query("SELECT * FROM ROOM WHERE Location=?",
-        [req.body.Location], function(err, rows, fields){
+    connection.query("SELECT * FROM ROOM WHERE (ROOM.Room_no, ROOM.Location) IN " +
+        "(SELECT Room_no, Location FROM RESERVATION_ROOM NATURAL JOIN RESERVATION WHERE (? > End_date OR ? < Start_date) AND Location = ?)",
+        [req.body.Startdate, req.body.Enddate, req.body.Location], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
                 res.json(result);
@@ -160,7 +156,9 @@ app.post('/searchrooms',function(req,res) {
         });
 });
 
-//@TODO: THIS ONE IS FOR INSERTING INTO RESERVATION_ROOM
+
+
+// MAKE RESERVATION QUERY PART 2: INSERT NEW INFORMATION
 app.post('/makereservationroom',function(req,res) {
     var result = { "Data":"", "Success":false,",reservationId":""}; //if not returning rows use this
     var user = req.body.User;
@@ -169,16 +167,9 @@ app.post('/makereservationroom',function(req,res) {
     var enddate = new Date(req.body.Enddate).toISOString().substr(0,9);
     var totalcost = req.body.Totalcost;
     var card = req.body.Card;
-    console.log(stardate);
-    console.log(enddate);
-    console.log(totalcost);
-    console.log(user);
-    console.log(card);
-    console.log(rooms);
 
     var reservationId;
 
-    //some sql query. question marks are replaced [somevar1,somevar2] respectively
     connection.query("INSERT INTO RESERVATION (Reservation_id,Start_date,End_date,Total_cost,Is_cancelled,Customer,Payment) VALUES ('NULL',?,?,?,?,?,?)",
             [stardate,enddate,totalcost,'FALSE',user,card], function(err, result){
                 if(err) {
@@ -221,40 +212,38 @@ app.post('/makereservationroom',function(req,res) {
             });
 });
 
+// Functionality : Save card information
 app.post('/savecard',function(req,res) {
-    var result = { "Data":"", "Success":false}; //if not returning rows use this
+    var result = { "Data":[], "Success":false}; //if not returning rows use this
 
     var Name = req.body.Name;
     var CardNum = req.body.CardNum;
     var Expmonth = req.body.Expmonth;
     var Expyear = req.body.Expyear;
     var curUser = req.body.Customer;
-    var cvv = req.body.cvv;
+    var cvv = req.body.CVV;
 
-    // @TODO UPDATE SQL TABLE
-    connection.query("INSERT INTO PAYMENT_INFORMATION (Name, CVV, Exp_date, Customer, Card_no) VALUES (?,?,?,?,?,?)",
-            [Name, CardNum, Expmonth, Expyear, curUser, cvv], function(err, rows, fields){
+    connection.query("INSERT INTO PAYMENT_INFORMATION (Name, CVV, Exp_month, Exp_year, Customer, Card_no) VALUES (?,?,?,?,?,?)",
+            [Name, cvv, Expmonth, Expyear, curUser, CardNum], function(err, rows, fields){
                 if(err) {
                     //Data set and returned on sql error
                     console.error('Card not saved: ' + err.stack);
-                    result["Data"] = "FAILURE";
                     res.json(result);
                 } else {
-                    result["Success"] = true;
+                    result.Success = true;
                     console.log("RECEIVED!", rows);
                     res.json(result);
                 }
             });
 });
 
+// Functionality: DELETE from PAYMENT_INFORMATION Table
 app.post('/deletecard',function(req,res) {
     var result = { "Data":"", "Success":false}; //if not returning rows use this
 
-    var CardNum = req.body.CardNum;
-
     //some sql query question marks are replaced [somevar1,somevar2] respectively
     connection.query("DELETE FROM PAYMENT_INFORMATION WHERE Card_no=?",
-            [somevar1,somevar2], function(err, rows, fields){
+            [req.body.CardNum], function(err, rows, fields){
                 if(err) {
                     console.error('CARD DELETION FAIL!: ' + err.stack);
                     res.json(result);
@@ -266,9 +255,9 @@ app.post('/deletecard',function(req,res) {
             });
 });
 
-//  this may get called on multiple pages to populate card info dropdowns
+// Functionality: SELECT from PAYMENT_INFORMATION Table
 app.post('/getcardinfo',function(req,res) {
-    var result = { "Data":"", "Success":false}; //if not returning rows use this
+    var result = { "Data":"", "Success":false};
     var user = req.body.User;
     console.log(user);
 
@@ -286,11 +275,10 @@ app.post('/getcardinfo',function(req,res) {
             });
 });
 
-//@TODO update reservation: SELECT from RSERVATION_ROOM, then UPDATE?
-
-
-// Table accessed: RESERVATION
-// Functionality: Retrieve all fields (
+// UPDATE RESERVATION PART 1
+// Functionality: Simply retrieve from RESERVATION given ID
+// USED IN UPDATE RESERVATION
+// USE TO DETERMINE IF RESERVATION EXISTS
 app.post('/retrieveReservation',function(req,res) {
     var result = { "Data":[], "Success":false}; //if not returning rows use this
 
@@ -312,13 +300,17 @@ app.post('/retrieveReservation',function(req,res) {
         });
 });
 
-// Table accessed: RESERVATION_ROOM
+
+// UPDATE RESERVATION PART 2
+// Input: Given new dates and reservation ID, check if the rooms in the reservation ID are still available in the new dates
 // Functionality:
-app.post('/retrieveReservationRoom',function(req,res) {
+app.post('/retrieveUpdatedReservation',function(req,res) {
     var result = { "Data":[], "Success":false}; //if not returning rows use this
 
-    connection.query("SELECT * FROM RESERVATION_ROOM WHERE Reservation_id=?",
-        [req.body.reservationId], function(err, rows, fields){
+
+    connection.query("SELECT DISTINCT * FROM ROOM NATURAL JOIN RESERVATION_ROOM NATURAL JOIN RESERVATION WHERE (ROOM.Room_no) IN " +
+        "(SELECT Room_no FROM ROOM NATURAL JOIN RESERVATION_ROOM WHERE Reservation_id = ?) AND (Start_date < ? OR End_date > ?) GROUP BY Room_no",
+        [req.body.reservationId, req.body.newenddate, req.body.newstartdate], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
                 res.json(result);
@@ -336,38 +328,60 @@ app.post('/retrieveReservationRoom',function(req,res) {
 });
 
 
-
-//@TODO update reservation query
+// UPDATE RESERVATION PART 3
+// INSERT UPDATED INFORMATION IN RESERVATION
+//
 app.post('/updateReservation',function(req,res) {
     var result = { "Data":"", "Success": false}; //if not returning rows use this
-
     connection.query("UPDATE RESERVATION SET Start_date=?, End_date=? WHERE Reservation_id=?",
         [req.body.Startdate, req.body.Enddate, req.body.Reservationid], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
             } else {
-                console.log("RESERVATION ROOM UPDATED!", rows);
+                console.log("RESERVATION  UPDATED!", rows);
                 result.Success = true;
                 res.json(result);
             }
         });
 });
 
-app.post('/cancelReservationRoom',function(req,res) {
-    var result = { "Data":"", "Success":false}; //if not returning rows use this
 
-    var user = req.body.User;
-    console.log(user);
+// CANCEL RESERVATION PART 1
+// GET ROOM INFORMATION CORRESPONDING TO THE GIVEN ID, THAT HAS ROOM FOR WHETHER ROOM HAS EXTRA BED OR NOT
+app.post('/cancelReservationRoomRetrieval',function(req,res) {
+    var result = { "Data":[], "Success":false}; //if not returning rows use this
 
     //some sql query question marks are replaced [somevar1,somevar2] respectively
-    connection.query("SELECT Card_no FROM PAYMENT_INFORMATION WHERE Customer=?",
-        [user], function(err, rows, fields){
+    connection.query("SELECT * FROM RESERVATION_ROOM NATURAL JOIN RESERVATION NATURAL JOIN ROOM WHERE Reservation_id =  ?",
+        [req.body.reservationId], function(err, rows, fields){
+            if(err) {
+                console.error('bad query: ' + err.stack);
+                res.json(result);
+            }
+            if (rows.length == 0) {
+                res.json(result);
+            } else {
+                console.log(rows);
+                result.Data = rows;
+                result.Success = true;
+                res.json(result);
+            }
+        });
+});
+
+
+// MARK ROOM RESERVATION QUERY
+app.post('/cancelReservationRoomMarkCancelled',function(req,res) {
+    var result = { "Data":[], "Success":false}; //if not returning rows use this
+
+    connection.query("UPDATE RESERVATION SET Is_cancelled = true WHERE Reservation_id =  ?",
+        [req.body.reservationId], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
                 res.json(result);
             } else {
-                console.log("CARD INFORMATION!", rows);
-                res.json(rows);
+                result.Success = true;
+                res.json(result);
             }
         });
 });
