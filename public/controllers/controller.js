@@ -37,7 +37,7 @@ var app = angular.module('FancyHotel',['ngRoute'])
             templateUrl: 'Mpopularroom.html',
         })
         .when('/Mreserationreport', {
-            templateUrl: 'Mreserationreport.html',
+            templateUrl: 'Mreservationreport.html',
         })
         .when('/Mrevenuereport', {
             templateUrl: 'Mrevenuereport.html',
@@ -192,7 +192,7 @@ function LoginCtrl($scope, $http) {
                 $scope.setcurUser($scope.user.Username);
                 console.log("curUser: ", $scope.$parent.curUser);
                 $scope.loginResponse = res.Message;
-                if(res.Success == true){
+                if(res["Success"]){
                     $scope.loginSucess();
                 }
             }
@@ -365,7 +365,8 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
                 costperday: rooms[i].Cost_per_day,
                 costextrabed: rooms[i].Cost_extra_bed_per_day,
                 location: rooms[i].Location,
-                extraBedSelected: false}
+                extraBedSelected: false,
+                selected:false}
         )
     }
 
@@ -373,16 +374,16 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
 
     // Populate selected room table
     $scope.checkDetails = function(argument) {
+        $scope.selectedRooms = [];
+        console.log($scope.roomlist);
+        console.log($scope.selectedRooms);
         angular.forEach($scope.roomlist, function(room, key){
             // push selected rooms that aren't alreayd in the list to prevent angularjs error
             if (room['selected'] && $scope.selectedRooms.indexOf(room) == -1) {
                 $scope.selectedRooms.push(room)
             }
-            //remove from selected rooms if unselected.
-            if (!room['selected'] && $scope.selectedRooms.indexOf(room) != -1)  {
-                $scope.selectedRooms.pop(room)
-            }
         });
+
     };
 
     // Dynamically calculate total cost
@@ -438,7 +439,7 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
             $scope.message = "Must select at least one card";
             return;
         }
-        if ($scope.selectedRooms.length > 0) {
+        if ($scope.selectedRooms.length < 1) {
             $scope.message = "Must select at least one room";
             return;
         }
@@ -779,13 +780,76 @@ function CancelreservationCtrl($scope, $http) {
  MakereservationCtrl method.*/
 
 
-function MpopularroomCtrl($scope, $http) {
-    console.log('You made it to Mpopularroom. Hello!');
+function MreserationreportCtrl($scope, $http) {
+    console.log('You made it to Mreserationreport. Hello!');
+    $scope.aa = [0,0,0,0,0]
+    $scope.data = [{month:" ", location:" ", total:" "},
+        {month:"", location:"Atlanta", total:0},
+        {month:"", location:"Savannah", total:0},
+        {month:"August", location:"Charlotte", total:0},
+        {month:"", location:"Orlando", total:0},
+        {month:"", location:"Miami", total:0},
+        {month:" ", location:" ", total:" "},
+        {month:"", location:"Atlanta", total:"17"},
+        {month:"", location:"Savannah", total:"25"},
+        {month:"September", location:"Charlotte", total:"9"},
+        {month:"", location:"Orlando", total:"32"},
+        {month:"", location:"Miami", total:"21"}];
+
+
+        var body = {}
+        $http.post('/reservationreport',body).success(function(res) {
+            if (res) {
+                console.log("Recieved something");
+                console.log(res);
+                if (res["Success"]) {
+                    $scope.response = 'got something';
+                    res["August"].forEach(function(row){
+                        if (row["Location"] == "Atlanta") {
+                            $scope.data[1]["total"] = row["Count"];
+                        }
+                        if (row["Location"] == "Savannah") {
+                            $scope.data[2]["total"] = row["Count"];
+                        }
+                        if (row["Location"] == "Charlotte") {
+                            $scope.data[3]["total"] = row["Count"];
+                        }
+                        if (row["Location"] == "Orlando") {
+                            $scope.data[4]["total"] = row["Count"];
+                        }
+                        if (row["Location"] == "Miami") {
+                            $scope.data[5]["total"] = row["Count"];
+                        }
+                    })
+
+                    res["September"].forEach(function(row){
+                        if (row["Location"] == "Atlanta") {
+                            $scope.data[7]["total"] = row["Count"];
+                        }
+                        if (row["Location"] == "Savannah") {
+                            $scope.data[8]["total"] = row["Count"];
+                        }
+                        if (row["Location"] == "Charlotte") {
+                            $scope.data[9]["total"] = row["Count"];
+                        }
+                        if (row["Location"] == "Orlando") {
+                            $scope.data[10]["total"] = row["Count"];
+                        }
+                        if (row["Location"] == "Miami") {
+                            $scope.data[11]["total"] = row["Count"];
+                        }
+                    })
+                } else {
+                    $scope.response = 'Something went wrong.';
+                }
+            }
+        });
+
 }
 
 
-function MreserationreportCtrl($scope, $http) {
-    console.log('You made it to Mreserationreport. Hello!');
+function MpopularroomCtrl($scope, $http) {
+    console.log('You made it to Mpopularroom. Hello!');
 }
 
 

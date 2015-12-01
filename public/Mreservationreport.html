@@ -1,8 +1,24 @@
 <html>
     <body>
-        <div class="main-container container-fluid text-center" ng-controller="MreservationreportCtrl">
+        <div class="main-container container-fluid text-center" ng-controller="MreserationreportCtrl">
             <h1 class="bg-info">Reservation Report</h1>
+            <table class="table table-responsive table-hover table-striped">
+				<thead>
+					<tr>
+						<th>Month</th>
+						<th>Location</th>
+						<th>Total number of reservations</th>
 
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="entry in data">
+						<td>{{entry.month}}</td>
+						<td>{{entry.location}}</td>
+						<td>{{entry.total}}</td>
+					</tr>
+				</tbody>
+			</table>
 
         </div>
     </body>

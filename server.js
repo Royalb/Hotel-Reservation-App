@@ -32,8 +32,7 @@ app.use(bodyParser.json());
 app.post('/login',function(req,res) {
     console.log("Username:",req.body.Username);
     var Username = req.body.Username;
-    var result = { "Data":[], "Success":false, "Message":"" };
-
+    var result = { "Data":"", "Success":false}
         connection.query("(SELECT Cust_username AS Username,PASSWORD FROM CUSTOMER WHERE Cust_username=? AND PASSWORD=? LIMIT 1)UNION(SELECT Man_username AS Username,PASSWORD FROM MANAGEMENT WHERE Man_username=? AND PASSWORD=? LIMIT 1)",
                 [req.body.Username,req.body.Password,req.body.Username,req.body.Password], function(err, rows, fields){
                     if(err) {
@@ -41,16 +40,16 @@ app.post('/login',function(req,res) {
                     }
                     if(rows.length != 0){
                         console.log("rows returned:",rows);
-                        result.Message = "Successfully logged in.";
-                        result.Success = true;
+                        result["Data"] = "Successfully logged in.";
+                        result["Success"] = true;
                         res.json(result);
                     } else {
                         console.log("Username or Password in incorrect", rows);
-                        result.Message = "Username or password is incorrect.";
+                        result["Data"] = "Username or password is incorrect.";
                         res.json(result);
                     }
                 });
-    console.log("result: ", result);
+    console.log("resule: ", result);
 });
 
 // TODO: Does not tell user when registration fails
@@ -60,7 +59,7 @@ app.post('/register',function(req,res) {
     var Password = req.body.Password;
     var PasswordConfirm = req.body.PasswordConfirm;
     var Email = req.body.Email;
-    var result = { "Data":[], "Success": false, "Message": ""};
+    var result = { "Data":"", "Success":"false"};
         connection.query("SELECT * FROM CUSTOMER WHERE Cust_username=? LIMIT 1",
                 [req.body.Username], function(err, rows, fields){
                     if(err) {
@@ -68,7 +67,7 @@ app.post('/register',function(req,res) {
                     }
                     if(rows.length != 0){
                         console.log("Username Taken", rows);
-                        result.Message = "Username Taken";
+                        result["Data"] = "Username Taken";
                         res.json(result);
                     } else {
                         console.log("rows returned:",rows);
@@ -81,8 +80,8 @@ app.post('/register',function(req,res) {
                                         console.log("registered done");
                                     }
                                 });
-                        result.Message = "Probably Registered Successfully";
-                        result.Success = true;
+                        result["Data"] = "Probably Registered Successfully";
+                        result["Success"] = true;
                         res.json(result);
                     }
                 });
@@ -137,7 +136,7 @@ app.post('/viewreview',function(req,res) {
 
 //@TODO IMPLEMENT MORE COMPLEX QUERY THAT SEARCHES ONILY THE ROOMS THAT HAVE NOT BEEN RESERVED (DO NOT EXIST IN RESERVATION_ROOM)
 app.post('/searchrooms',function(req,res) {
-    var result = { "Data":[], "Success": false}; //if not returning rows use this
+    var result = { "Data":"", "Success": "false"}; //if not returning rows use this
 
     var startdate = req.body.Startdate;
     var enddate = req.body.Enddate;
@@ -146,16 +145,13 @@ app.post('/searchrooms',function(req,res) {
         [req.body.Location], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
-                res.json(result);
-            }
-            if (rows.length == 0) {
-                console.log("No rooms were returned");
+                result["Data"] = "ROOM RETRIEVAL FAILURE";
                 res.json(result);
             } else {
+                // result["Success"] = "true";
                 console.log("ROOMS RECEIVED!", rows);
-                result.Success = true;
-                result.Data = rows;
-                res.json(result);
+                // console.log("result: ", result);
+                res.json(rows);
             }
         });
 });
@@ -163,12 +159,12 @@ app.post('/searchrooms',function(req,res) {
 //@TODO: THIS ONE IS FOR INSERTING INTO RESERVATION_ROOM
 app.post('/makereservationroom',function(req,res) {
     var result = { "Data":"", "Success":false,",reservationId":""}; //if not returning rows use this
-    var user = req.body.User;
-    var rooms = req.body.Rooms;
+    var user = req.body.User
+    var rooms = req.body.Rooms
     var stardate = new Date(req.body.Startdate).toISOString().substr(0,9);
     var enddate = new Date(req.body.Enddate).toISOString().substr(0,9);
-    var totalcost = req.body.Totalcost;
-    var card = req.body.Card;
+    var totalcost = req.body.Totalcost
+    var card = req.body.Card
     console.log(stardate);
     console.log(enddate);
     console.log(totalcost);
@@ -189,14 +185,15 @@ app.post('/makereservationroom',function(req,res) {
                     return;
                 } else {
                     console.log(result);
+                    console.log(result["insertId"]);
                     reservationId = result["insertId"];
                     console.log(rooms);
                     console.log("RESERVATION TABLE UPDATED IT WORKED");
                     rooms.forEach(function(room){
                         console.log("a rooms : ",room);
                         var number = room["number"];
-                        var location = room["location"];
-                        var extrabed = room["extraBedSelected"];
+                        var location = room["location"]
+                        var extrabed = room["extraBedSelected"]
                         connection.query("INSERT INTO RESERVATION_ROOM (Reservation_id,Room_no,Location,Has_extra_bed) VALUES (?,?,?,?)",
                                 [reservationId,number,location,extrabed], function(err){
                                     if(err) {
@@ -207,9 +204,13 @@ app.post('/makereservationroom',function(req,res) {
                                         return;
                                     } else {
                                         console.log("RESERVATION_ROOM UPDATED");
+                                        //return "rows" if getting database data
+                                        //if no data is to be returned, return result with "Data"set as "success!" or something
+                                        //
+
                                     }
                                 });
-                    });
+                    })
                     if (result["Data"] != "FAILURE") {
                         result["Data"] = "Reservation added";
                         result["Success"] = true;
@@ -287,68 +288,40 @@ app.post('/getcardinfo',function(req,res) {
 });
 
 //@TODO update reservation: SELECT from RSERVATION_ROOM, then UPDATE?
-
-
-// Table accessed: RESERVATION
-// Functionality: Retrieve all fields (
-app.post('/retrieveReservation',function(req,res) {
-    var result = { "Data":[], "Success":false}; //if not returning rows use this
-
-    connection.query("SELECT * FROM RESERVATION WHERE Reservation_id=?",
-        [req.body.reservationId], function(err, rows, fields){
-            if(err) {
-                console.error('bad query: ' + err.stack);
-                res.json(result);
-            }
-            if (rows.length == 0) {
-                console.log("Server: NO ROWS FROM RESERVATION", result);
-                res.json(result);
-            } else {
-                result.Success = true;
-                result.Data = rows;
-                console.log("Server: ROWS FROM RESERVATION SENDING", result);
-                res.json(result);
-            }
-        });
-});
-
-// Table accessed: RESERVATION_ROOM
-// Functionality:
 app.post('/retrieveReservationRoom',function(req,res) {
-    var result = { "Data":[], "Success":false}; //if not returning rows use this
+    var result = { "Data":"", "Success":false}; //if not returning rows use this
 
-    connection.query("SELECT * FROM RESERVATION_ROOM WHERE Reservation_id=?",
-        [req.body.reservationId], function(err, rows, fields){
+    var reservationId = req.body.reservationId;
+    console.log(user);
+
+    //some sql query question marks are replaced [somevar1,somevar2] respectively
+    connection.query("SELECT Card_no FROM PAYMENT_INFORMATION WHERE Customer=?",
+        [reservationId], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
                 res.json(result);
-            }
-            if (rows.length == 0) {
-                console.log("Server: NO ROWS FROM RESERVATION_ROOM", result);
-                res.json(result);
             } else {
-                result.Success = true;
-                result.Data = rows;
-                console.log("Server: ROWS FROM RESERVATION_ROOM SENDING", result);
-                res.json(result);
+                console.log("CARD INFORMATION!", rows);
+                res.json(rows);
             }
         });
 });
 
+app.post('/updateReservationRoom',function(req,res) {
+    var result = { "Data":"", "Success":false}; //if not returning rows use this
 
+    var user = req.body.User;
+    console.log(user);
 
-//@TODO update reservation query
-app.post('/updateReservation',function(req,res) {
-    var result = { "Data":"", "Success": false}; //if not returning rows use this
-
-    connection.query("UPDATE RESERVATION SET Start_date=?, End_date=? WHERE Reservation_id=?",
-        [req.body.Startdate, req.body.Enddate, req.body.Reservationid], function(err, rows, fields){
+    //some sql query question marks are replaced [somevar1,somevar2] respectively
+    connection.query("SELECT Card_no FROM PAYMENT_INFORMATION WHERE Customer=?",
+        [user], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
-            } else {
-                console.log("RESERVATION ROOM UPDATED!", rows);
-                result.Success = true;
                 res.json(result);
+            } else {
+                console.log("CARD INFORMATION!", rows);
+                res.json(rows);
             }
         });
 });
@@ -368,6 +341,36 @@ app.post('/cancelReservationRoom',function(req,res) {
             } else {
                 console.log("CARD INFORMATION!", rows);
                 res.json(rows);
+            }
+        });
+});
+
+app.post('/reservationreport',function(req,res) {
+    var result = { "August":[], "September":[], "Success":false}; //if not returning rows use this
+
+
+    //some sql query question marks are replaced [somevar1,somevar2] respectively
+    connection.query("SELECT t2.Location,COUNT(DISTINCT t1.Reservation_id) as Count FROM (SELECT * FROM RESERVATION Where MONTH(RESERVATION.Start_date) = 11) as t1, (SELECT * FROM RESERVATION_ROOM) as t2 WHERE t1.Reservation_id = t2.Reservation_id GROUP BY t2.Location",
+        [], function(err, rows, fields){
+            if(err) {
+                console.error('bad query: ' + err.stack);
+                res.json(result);
+            } else {
+                console.log("Got AUGUST", rows);
+                result["Success"] = true;
+                result["August"] = rows;
+            }
+        });
+    connection.query("SELECT t2.Location,COUNT(DISTINCT t1.Reservation_id) AS Count FROM (SELECT * FROM RESERVATION Where MONTH(RESERVATION.Start_date) = 9) as t1, (SELECT * FROM RESERVATION_ROOM) as t2 WHERE t1.Reservation_id = t2.Reservation_id GROUP BY t2.Location",
+        [], function(err, rows, fields){
+            if(err) {
+                console.error('bad query: ' + err.stack);
+                res.json(result);
+            } else {
+                console.log("GOT SEPTEMBER!", rows);
+                result["Success"] = true
+                result["September"] = rows
+                res.json(result);
             }
         });
 });
