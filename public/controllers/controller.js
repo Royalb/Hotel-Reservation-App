@@ -320,11 +320,11 @@ function SearchroomsCtrl($scope, $http, availableroomsService) {
         }
         if ($scope.startdate < $scope.curdate) {
             $scope.message = "Can not choose dates in the past";
-            return;
+            //return;
         }
         var body = {
-            "Startdate":$scope.startdate.toISOString().substr(0,9),
-            "Enddate":$scope.enddate.toISOString().substr(0,9),
+            "Startdate":$scope.startdate.toISOString().substr(0,10),
+            "Enddate":$scope.enddate.toISOString().substr(0,10),
             "Location":$scope.curSelectedLoc.name};
 
         $http.post('/searchrooms', body).success(function(res) {
@@ -792,7 +792,6 @@ function CancelreservationCtrl($scope, $http) {
 
 function MreserationreportCtrl($scope, $http) {
     console.log('You made it to Mreserationreport. Hello!');
-    $scope.aa = [0,0,0,0,0]
     $scope.data = [{month:" ", location:" ", total:" "},
         {month:"", location:"Atlanta", total:0},
         {month:"", location:"Savannah", total:0},
@@ -800,11 +799,11 @@ function MreserationreportCtrl($scope, $http) {
         {month:"", location:"Orlando", total:0},
         {month:"", location:"Miami", total:0},
         {month:" ", location:" ", total:" "},
-        {month:"", location:"Atlanta", total:"17"},
-        {month:"", location:"Savannah", total:"25"},
-        {month:"September", location:"Charlotte", total:"9"},
-        {month:"", location:"Orlando", total:"32"},
-        {month:"", location:"Miami", total:"21"}];
+        {month:"", location:"Atlanta", total:0},
+        {month:"", location:"Savannah", total:0},
+        {month:"September", location:"Charlotte", total:0},
+        {month:"", location:"Orlando", total:0},
+        {month:"", location:"Miami", total:0}];
 
 
         var body = {}
@@ -865,4 +864,67 @@ function MpopularroomCtrl($scope, $http) {
 
 function MrevenuereportCtrl($scope, $http) {
     console.log('You made it to Mrevenuereport. Hello!');
+    $scope.data = [{month:" ", location:" ", total:" "},
+        {month:"", location:"Atlanta", total:0},
+        {month:"", location:"Savannah", total:0},
+        {month:"August", location:"Charlotte", total:0},
+        {month:"", location:"Orlando", total:0},
+        {month:"", location:"Miami", total:0},
+        {month:" ", location:" ", total:" "},
+        {month:"", location:"Atlanta", total:0},
+        {month:"", location:"Savannah", total:0},
+        {month:"September", location:"Charlotte", total:0},
+        {month:"", location:"Orlando", total:0},
+        {month:"", location:"Miami", total:0}];
+
+
+        var body = {}
+        $http.post('/revenuereport',body).success(function(res) {
+            if (res) {
+                console.log("Recieved something");
+                console.log(res);
+                if (res["Success"]) {
+                    console.log("Had Success");
+                    $scope.response = 'got something';
+                    res["August"].forEach(function(row){
+                        if (row["Location"] == "Atlanta") {
+                            $scope.data[1]["total"] = row["Cost"];
+                            console.log("atlanta cost:",row["Cost"]);
+                        }
+                        if (row["Location"] == "Savannah") {
+                            $scope.data[2]["total"] = row["Cost"];
+                        }
+                        if (row["Location"] == "Charlotte") {
+                            $scope.data[3]["total"] = row["Cost"];
+                        }
+                        if (row["Location"] == "Orlando") {
+                            $scope.data[4]["total"] = row["Cost"];
+                        }
+                        if (row["Location"] == "Miami") {
+                            $scope.data[5]["total"] = row["Cost"];
+                        }
+                    })
+
+                    res["September"].forEach(function(row){
+                        if (row["Location"] == "Atlanta") {
+                            $scope.data[7]["total"] = row["Cost"];
+                        }
+                        if (row["Location"] == "Savannah") {
+                            $scope.data[8]["total"] = row["Cost"];
+                        }
+                        if (row["Location"] == "Charlotte") {
+                            $scope.data[9]["total"] = row["Cost"];
+                        }
+                        if (row["Location"] == "Orlando") {
+                            $scope.data[10]["total"] = row["Cost"];
+                        }
+                        if (row["Location"] == "Miami") {
+                            $scope.data[11]["total"] = row["Cost"];
+                        }
+                    })
+                } else {
+                    $scope.response = 'Something went wrong.';
+                }
+            }
+        });
 }

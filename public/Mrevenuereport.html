@@ -2,7 +2,23 @@
     <body>
         <div class="main-container container-fluid text-center" ng-controller="MrevenuereportCtrl">
             <h1 class="bg-info">Revenue Report</h1>
+            <table class="table table-responsive table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Location</th>
+                        <th>Total Revenue</th>
 
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="entry in data">
+                        <td>{{entry.month}}</td>
+                        <td>{{entry.location}}</td>
+                        <td>{{entry.total}}</td>
+                    </tr>
+                </tbody>
+            </table>
 
         </div>
     </body>

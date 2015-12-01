@@ -136,10 +136,9 @@ app.post('/viewreview',function(req,res) {
 // MAKE RESERVATION QUERY PART 1: GET ROOMS THAT HAVE NOT BEEN RESERVED
 app.post('/searchrooms',function(req,res) {
     var result = { "Data":[], "Success": false}; //if not returning rows use this
-
-    connection.query("SELECT * FROM ROOM WHERE (ROOM.Room_no, ROOM.Location) IN " +
-        "(SELECT Room_no, Location FROM RESERVATION_ROOM NATURAL JOIN RESERVATION WHERE (? > End_date OR ? < Start_date) AND Location = ?)",
-        [req.body.Startdate, req.body.Enddate, req.body.Location], function(err, rows, fields){
+    //SELECT * FROM ROOM WHERE (ROOM.Room_no, ROOM.Location) IN " +"(SELECT Room_no, Location FROM RESERVATION_ROOM NATURAL JOIN RESERVATION WHERE (? > End_date OR ? < Start_date) AND Location = ?)
+    connection.query("SELECT * FROM ROOM WHERE (ROOM.Room_no, ROOM.Location) NOT IN (SELECT Room_no, Location FROM RESERVATION_ROOM NATURAL JOIN RESERVATION WHERE ((? BETWEEN Start_date AND End_date) OR (? BETWEEN Start_date AND End_date) OR ((Start_date AND  End_date) BETWEEN ? AND ?)) AND Is_cancelled = 0 AND Location = ?) AND Location = ?",
+        [req.body.Startdate, req.body.Enddate,req.body.Startdate, req.body.Enddate, req.body.Location,req.body.Location], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
                 res.json(result);
@@ -163,11 +162,12 @@ app.post('/makereservationroom',function(req,res) {
     var result = { "Data":"", "Success":false,",reservationId":""}; //if not returning rows use this
     var user = req.body.User;
     var rooms = req.body.Rooms;
-    var stardate = new Date(req.body.Startdate).toISOString().substr(0,9);
-    var enddate = new Date(req.body.Enddate).toISOString().substr(0,9);
+    var stardate = new Date(req.body.Startdate).toISOString().substr(0,10);
+    var enddate = new Date(req.body.Enddate).toISOString().substr(0,10);
     var totalcost = req.body.Totalcost;
     var card = req.body.Card;
-
+    console.log(stardate);
+    console.log(enddate);
     var reservationId;
 
     connection.query("INSERT INTO RESERVATION (Reservation_id,Start_date,End_date,Total_cost,Is_cancelled,Customer,Payment) VALUES ('NULL',?,?,?,?,?,?)",
@@ -416,6 +416,36 @@ app.post('/reservationreport',function(req,res) {
         });
 });
 
+
+app.post('/revenuereport',function(req,res) {
+    var result = { "August":[], "September":[], "Success":false}; //if not returning rows use this
+
+
+    //some sql query question marks are replaced [somevar1,somevar2] respectively
+    connection.query("SELECT t3.Location as Location,SUM(t3.Cost) as Cost FROM (SELECT t2.Location,t1.Reservation_id,t1.Total_cost as Cost FROM (SELECT * FROM RESERVATION Where MONTH(RESERVATION.Start_date) = 11) as t1, (SELECT * FROM RESERVATION_ROOM) as t2 WHERE t1.Reservation_id = t2.Reservation_id GROUP BY t1.Reservation_id) as t3 GROUP BY t3.Location",
+        [], function(err, rows, fields){
+            if(err) {
+                console.error('bad query: ' + err.stack);
+                res.json(result);
+            } else {
+                console.log("Got AUGUST", rows);
+                result["Success"] = true;
+                result["August"] = rows;
+            }
+        });
+        connection.query("SELECT t3.Location as Location,SUM(t3.Cost) as Cost FROM (SELECT t2.Location,t1.Reservation_id,t1.Total_cost as Cost FROM (SELECT * FROM RESERVATION Where MONTH(RESERVATION.Start_date) = 9) as t1, (SELECT * FROM RESERVATION_ROOM) as t2 WHERE t1.Reservation_id = t2.Reservation_id GROUP BY t1.Reservation_id) as t3 GROUP BY t3.Location",
+            [], function(err, rows, fields){
+                if(err) {
+                    console.error('bad query: ' + err.stack);
+                    res.json(result);
+                } else {
+                    console.log("Got September", rows);
+                    result["Success"] = true;
+                    result["September"] = rows;
+                    res.json(result);
+                }
+            });
+});
 
 
 // does not do anything probably remove this.
