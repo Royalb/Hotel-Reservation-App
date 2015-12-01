@@ -600,7 +600,7 @@ function UpdatereservationCtrl($scope, $http, mainPageMessageService) {
     };
 
     $scope.roomlist = [];
-    $scope.showRoom = false;
+    $scope.showReservation = false;
 
     $scope.searchAvailability = function() {
 
@@ -625,7 +625,7 @@ function UpdatereservationCtrl($scope, $http, mainPageMessageService) {
 
         $http.post('/searchrooms', body).success(function(res) {
             if (res.Success) {
-                $scope.showRoom = true;
+                $scope.showReservation = true;
                 $scope.roomLookupMessage = 'Rooms are available. Please confirm details below before submitting.';
                 // populate roomlist
                 for (var i = 0; i < res.Data.length; i++) {
@@ -676,65 +676,101 @@ function UpdatereservationCtrl($scope, $http, mainPageMessageService) {
 //@TODO POPULATE START DATE/ END DATE BOXES
 //@TODO POPULATE ROOM INFORMATION TABLE
 //@TODO CALCULATE CANCELLATION CHARGES
+
+//function calculateDifferenceInDay(a, b) {
+//    a = new Date(a.substr(0,10).replace(/-/g,'/'));
+//    b = new Date(b.substr(0,10).replace(/-/g,'/'));
+//    return Math.abs((a - b) / (1000 * 60 * 60 * 24));
+//};
+
+
 function CancelreservationCtrl($scope, $http) {
     console.log('You made it to Cancelreservation. Hello!');
 
     $scope.curDate = new Date();
-    $scope.startDate = new Date();
-    $scope.endDate = new Date();
+
+    $scope.startdate = new Date();
+    $scope.enddate = new Date();
     $scope.reservationCost = "";
     $scope.refundCost = "";
     $scope.reservationId = "";
+    $scope.totalcost = "";
+
+    $scope.reservationLookupMessage = "";
+    $scope.showReservation = false;
+
+    $scope.roomlist = []
 
     $scope.retrieveReservation = function() {
         var body = {
-            "ReservationId": $scope.reservationId
+            "reservationId": $scope.reservationId
         };
 
-        $http.post('/retrieveReservationRoom', body).success(function(res) {
-            if (res) {
-                console.log("Received something");
-                if (res["Success"]) {
-                    $scope.response = 'Reservation retrieved  successfully';
-                    //@TODO SET RESERVATION COST, START DATE, END DATE
-                    // $scope.reservationCost = ?
-                } else {
-                    $scope.response = 'Reservation retrieval failure.';
-                    //@TODO ALERT USER OF NONEXISTANT RESERVATION ID
-                }
-            }
-        });
+        //$http.post('/retrieveReservation', body).success(function (res) {
+        //    if (res.Success) {
+        //        $scope.showReservation = true;
+        //        $scope.reservationLookupMessage = "Reservation has been found.";
+        //        $scope.startdate = res.Data[0]["Start_date"];
+        //        $scope.enddate = res.Data[0]["Total_cost"];
+        //        $scope.totalcost = "";
+        //
+        //
+        //        for (var i = 0; i < res.Data.length; i++) {
+        //            var body = {
+        //                "reservationId": res.Data[i].Reservation_id
+        //            };
+        //            $http.post('/retrieveReservationRoom', body).success(function (res2) {
+        //                if (res2.Success) {
+        //                    $scope.roomlist.push({
+        //                        number: res.Data[i].Room_no,
+        //                        category: res.Data[i].Room_category,
+        //                        pallowed: res.Data[i].No_people,
+        //                        costperday: res.Data[i].Cost_per_day,
+        //                        costextrabed: res.Data[i].Cost_extra_bed_per_day,
+        //                        hasextrabed: res2.Data[i].Has_extra_bed
+        //                    })
+        //                }
+        //            });
+        //        }
+        //    } else {
+        //        $scope.reservationLookupMessage = "No reservation has been found. Please enter a different ID.";
+        //    }
+        //});
+
     };
 
     $scope.calculateRefundCost = function() {
-        var numDays = $scope.curDate - $scope.startDate;
+        //var numDays = calculateDifferenceInDay($scope.startdate, $scope.enddate);
+
+        var numDays = 5;
 
         if (numDays <= 1) {
-            $scope.refundCost = "0";
+            return 0;
         } else if (numDays <= 3) {
-            //$scope.refundCost
+            return $scope.totalcost * 0.8;
         } else {
-            $scope.refundCost = $scope.reservationCost;
+            return $scope.totalcost;
         }
     };
 
-    $scope.cancelReservation = function() {
-        var body = {
-            "ReservationId": $scope.reservationId
-        };
-
-        $http.post('/cancelReservationRoom', body).success(function(res) {
-            if (res) {
-                console.log("Received something");
-                if (res["Success"]) {
-                    $scope.response = 'Reservation cancelled successfully';
-
-                } else {
-                    $scope.response = 'Reservation cancellation failure';
-                }
-            }
-        });
-    };
+    //
+    //$scope.cancelReservation = function() {
+    //    var body = {
+    //        "ReservationId": $scope.reservationId
+    //    };
+    //
+    //    $http.post('/cancelReservationRoom', body).success(function(res) {
+    //        if (res) {
+    //            console.log("Received something");
+    //            if (res["Success"]) {
+    //                $scope.response = 'Reservation cancelled successfully';
+    //
+    //            } else {
+    //                $scope.response = 'Reservation cancellation failure';
+    //            }
+    //        }
+    //    });
+    //};
 }
 
 /* the response from the sql database with the available rooms will be saved

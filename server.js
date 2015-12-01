@@ -189,14 +189,13 @@ app.post('/makereservationroom',function(req,res) {
                     return;
                 } else {
                     console.log(result);
-                    console.log(result["insertId"]);
                     reservationId = result["insertId"];
                     console.log(rooms);
                     console.log("RESERVATION TABLE UPDATED IT WORKED");
                     rooms.forEach(function(room){
                         console.log("a rooms : ",room);
                         var number = room["number"];
-                        var location = room["location"]
+                        var location = room["location"];
                         var extrabed = room["extraBedSelected"];
                         connection.query("INSERT INTO RESERVATION_ROOM (Reservation_id,Room_no,Location,Has_extra_bed) VALUES (?,?,?,?)",
                                 [reservationId,number,location,extrabed], function(err){
@@ -208,10 +207,6 @@ app.post('/makereservationroom',function(req,res) {
                                         return;
                                     } else {
                                         console.log("RESERVATION_ROOM UPDATED");
-                                        //return "rows" if getting database data
-                                        //if no data is to be returned, return result with "Data"set as "success!" or something
-                                        //
-
                                     }
                                 });
                     });
@@ -292,6 +287,10 @@ app.post('/getcardinfo',function(req,res) {
 });
 
 //@TODO update reservation: SELECT from RSERVATION_ROOM, then UPDATE?
+
+
+// Table accessed: RESERVATION
+// Functionality: Retrieve all fields (
 app.post('/retrieveReservation',function(req,res) {
     var result = { "Data":[], "Success":false}; //if not returning rows use this
 
@@ -300,14 +299,43 @@ app.post('/retrieveReservation',function(req,res) {
             if(err) {
                 console.error('bad query: ' + err.stack);
                 res.json(result);
+            }
+            if (rows.length == 0) {
+                console.log("Server: NO ROWS FROM RESERVATION", result);
+                res.json(result);
             } else {
                 result.Success = true;
                 result.Data = rows;
-                console.log("Server: RESERVATION ROOM DATA TO SEND!", result);
+                console.log("Server: ROWS FROM RESERVATION SENDING", result);
                 res.json(result);
             }
         });
 });
+
+// Table accessed: RESERVATION_ROOM
+// Functionality:
+app.post('/retrieveReservationRoom',function(req,res) {
+    var result = { "Data":[], "Success":false}; //if not returning rows use this
+
+    connection.query("SELECT * FROM RESERVATION_ROOM WHERE Reservation_id=?",
+        [req.body.reservationId], function(err, rows, fields){
+            if(err) {
+                console.error('bad query: ' + err.stack);
+                res.json(result);
+            }
+            if (rows.length == 0) {
+                console.log("Server: NO ROWS FROM RESERVATION_ROOM", result);
+                res.json(result);
+            } else {
+                result.Success = true;
+                result.Data = rows;
+                console.log("Server: ROWS FROM RESERVATION_ROOM SENDING", result);
+                res.json(result);
+            }
+        });
+});
+
+
 
 //@TODO update reservation query
 app.post('/updateReservation',function(req,res) {
