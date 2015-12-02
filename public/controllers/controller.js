@@ -416,6 +416,7 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
         }
     });
 
+
     //@TODO CHECK IF THE DROPDOWN CORRECTLY ASSIGNS SELECTED CARD
     // Wait for card to be selected
     $scope.selectedCard = "";
@@ -630,7 +631,7 @@ function UpdatereservationCtrl($scope, $http, mainPageMessageService) {
         }
         if ($scope.newstartdate < $scope.curdate) {
             $scope.roomLookupMessage = "Can not choose dates in the past";
-            //return;
+            return;
         }
 
         var body = {
