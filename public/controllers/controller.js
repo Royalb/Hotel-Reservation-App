@@ -308,19 +308,19 @@ function SearchroomsCtrl($scope, $http, availableroomsService) {
     $scope.curdate = new Date();
     $scope.locations = [{name:'Atlanta'},{name:'Charlotte'},{name:'Savannah'},{name:'Orlando'},{name:'Miami'}];
     $scope.curSelectedLoc = $scope.locations[0];
-    $scope.startdate = $scope.curdate;
+    $scope.startdate = new Date($scope.curdate.setHours(24,0,0,0));
     $scope.enddate = new Date(new Date().setHours(24,0,0,0));
 
     $scope.message = "";
 
     $scope.search = function () {
-        if ($scope.startdate.valueOf() >= $scope.enddate.valueOf()) {
+        if ($scope.startdate.valueOf() > $scope.enddate.valueOf()) {
             $scope.message = " Please choose end date after start date.";
             return;
         }
         if ($scope.startdate < $scope.curdate) {
             $scope.message = "Can not choose dates in the past";
-            //return;
+            return;
         }
         var body = {
             "Startdate":$scope.startdate.toISOString().substr(0,10),
@@ -426,7 +426,7 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
 
     // Submit reservation
     $scope.submitReservation = function () {
-        if ($scope.startdate.valueOf() >= $scope.enddate.valueOf()) {
+        if ($scope.startdate.valueOf() > $scope.enddate.valueOf()) {
             $scope.message = " Please choose end date after start date.";
             return;
         }
@@ -594,7 +594,7 @@ function UpdatereservationCtrl($scope, $http, mainPageMessageService) {
     $scope.curdate = new Date();
     $scope.oldstartdate = new Date();
     $scope.oldenddate = new Date();
-    $scope.newstartdate = new Date();
+    $scope.newstartdate = new Date($scope.curdate.setHours(24,0,0,0));
     $scope.newenddate = new Date(new Date().setHours(24,0,0,0));
 
     $scope.reservationLookupMessage = "";
@@ -624,13 +624,13 @@ function UpdatereservationCtrl($scope, $http, mainPageMessageService) {
 
     $scope.searchAvailability = function() {
 
-        if ($scope.newstartdate.valueOf() >= $scope.newenddate.valueOf()) {
+        if ($scope.newstartdate.valueOf() > $scope.newenddate.valueOf()) {
             $scope.roomLookupMessage = " Please choose end date after start date.";
             return;
         }
         if ($scope.newstartdate < $scope.curdate) {
             $scope.roomLookupMessage = "Can not choose dates in the past";
-            return;
+            //return;
         }
 
         var body = {
@@ -859,6 +859,53 @@ function MreserationreportCtrl($scope, $http) {
 
 function MpopularroomCtrl($scope, $http) {
     console.log('You made it to Mpopularroom. Hello!');
+    $scope.data = [{month:" ", location:" ", total:" "},
+        {month:"", type:"None", location:"Atlanta", total:0},
+        {month:"", type:"None", location:"Savannah", total:0},
+        {month:"August", type:"None", location:"Charlotte", total:0},
+        {month:"", type:"None", location:"Orlando", total:0},
+        {month:"", type:"None", location:"Miami", total:0},
+        {month:" ", type:"", location:" ", total:" "},]
+
+
+        var body = {};
+        $http.post('/popularreport',body).success(function(res) {
+            if (res) {
+                console.log("Recieved something");
+                console.log(res);
+                if (res["Success"]) {
+                    console.log("Had Success");
+                    $scope.response = 'got something';
+                    res["August"].forEach(function(row){
+                        if (row["Location"] == "Atlanta") {
+                            $scope.data[1]["total"] = row["Count"];
+                            $scope.data[1]["type"] = row["Room_category"];
+                            console.log("atlanta Count:",row["Count"]);
+                        }
+                        if (row["Location"] == "Savannah") {
+                            $scope.data[2]["total"] = row["Count"];
+                            $scope.data[2]["type"] = row["Room_category"];
+                        }
+                        if (row["Location"] == "Charlotte") {
+                            $scope.data[3]["total"] = row["Count"];
+                            $scope.data[3]["type"] = row["Room_category"];
+                        }
+                        if (row["Location"] == "Orlando") {
+                            $scope.data[4]["total"] = row["Count"];
+                            $scope.data[4]["type"] = row["Room_category"];
+                        }
+                        if (row["Location"] == "Miami") {
+                            $scope.data[5]["total"] = row["Count"];
+                            $scope.data[5]["type"] = row["Room_category"];
+                        }
+                    })
+
+                } else {
+                    $scope.response = 'Something went wrong.';
+                }
+            }
+        });
+
 }
 
 

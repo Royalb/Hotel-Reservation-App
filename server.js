@@ -137,8 +137,8 @@ app.post('/viewreview',function(req,res) {
 app.post('/searchrooms',function(req,res) {
     var result = { "Data":[], "Success": false}; //if not returning rows use this
     //SELECT * FROM ROOM WHERE (ROOM.Room_no, ROOM.Location) IN " +"(SELECT Room_no, Location FROM RESERVATION_ROOM NATURAL JOIN RESERVATION WHERE (? > End_date OR ? < Start_date) AND Location = ?)
-    connection.query("SELECT * FROM ROOM WHERE (ROOM.Room_no, ROOM.Location) NOT IN (SELECT Room_no, Location FROM RESERVATION_ROOM NATURAL JOIN RESERVATION WHERE ((? BETWEEN Start_date AND End_date) OR (? BETWEEN Start_date AND End_date) OR ((Start_date AND  End_date) BETWEEN ? AND ?)) AND Is_cancelled = 0 AND Location = ?) AND Location = ?",
-        [req.body.Startdate, req.body.Enddate,req.body.Startdate, req.body.Enddate, req.body.Location,req.body.Location], function(err, rows, fields){
+    connection.query("SELECT * FROM ROOM WHERE (ROOM.Room_no, ROOM.Location) NOT IN (SELECT Room_no, Location FROM RESERVATION_ROOM NATURAL JOIN RESERVATION WHERE ((? BETWEEN Start_date AND End_date) OR (? BETWEEN Start_date AND End_date) OR (Start_date BETWEEN ? AND ?) OR (End_date BETWEEN ? AND ?)) AND Is_cancelled = 0 AND Location = ?) AND Location = ?",
+        [req.body.Startdate, req.body.Enddate,req.body.Startdate, req.body.Enddate, req.body.Startdate, req.body.Enddate, req.body.Location,req.body.Location], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
                 res.json(result);
@@ -169,7 +169,7 @@ app.post('/makereservationroom',function(req,res) {
     console.log(stardate);
     console.log(enddate);
     var reservationId;
-
+    console.log(card);
     connection.query("INSERT INTO RESERVATION (Reservation_id,Start_date,End_date,Total_cost,Is_cancelled,Customer,Payment) VALUES ('NULL',?,?,?,?,?,?)",
             [stardate,enddate,totalcost,'FALSE',user,card], function(err, result){
                 if(err) {
@@ -307,10 +307,32 @@ app.post('/retrieveReservation',function(req,res) {
 app.post('/retrieveUpdatedReservation',function(req,res) {
     var result = { "Data":[], "Success":false}; //if not returning rows use this
 
-
-    connection.query("SELECT DISTINCT * FROM ROOM NATURAL JOIN RESERVATION_ROOM NATURAL JOIN RESERVATION WHERE (ROOM.Room_no) IN " +
-        "(SELECT Room_no FROM ROOM NATURAL JOIN RESERVATION_ROOM WHERE Reservation_id = ?) AND (Start_date < ? OR End_date > ?) GROUP BY Room_no",
-        [req.body.reservationId, req.body.newenddate, req.body.newstartdate], function(err, rows, fields){
+    // old query SELECT DISTINCT * FROM ROOM NATURAL JOIN RESERVATION_ROOM NATURAL JOIN RESERVATION WHERE (ROOM.Room_no) IN " + "(SELECT Room_no FROM ROOM NATURAL JOIN RESERVATION_ROOM WHERE Reservation_id = ?) AND (Start_date < ? OR End_date > ?) GROUP BY Room_no
+    connection.query("SELECT ro.* "
++"FROM ROOM AS ro NATURAL JOIN RESERVATION_ROOM AS rr NATURAL JOIN RESERVATION AS r "
++"WHERE r.Reservation_id = "
+    +"(SELECT IF( "
+        +"(SELECT COUNT(*) "
+        +"FROM RESERVATION_ROOM AS rr NATURAL JOIN RESERVATION AS r  "
+        +"WHERE r.Reservation_id = ? AND (rr.Room_no, rr.Location)  "
+        +"NOT IN "
+        +"(SELECT rr.Room_no, rr.Location  "
+        +"FROM RESERVATION_ROOM AS rr   "
+        +"NATURAL JOIN RESERVATION AS r  "
+        +"WHERE (r.Reservation_id != ?  "
+            +"AND ? BETWEEN r.Start_date AND r.End_date "
+                +"OR ? BETWEEN r.Start_date AND r.End_date "
+                +"OR r.Start_date BETWEEN ? AND ? "
+                +"OR r.End_date BETWEEN ? AND ?) "
+            +"AND Is_cancelled = 0)) "
+        +"= "
+        +"(SELECT COUNT(*) "
+        +"FROM RESERVATION_ROOM AS rr NATURAL JOIN RESERVATION AS r  "
+        +"WHERE r.Reservation_id = ?), "
+        +"48, "
+        +"NULL "
+    +")) ",
+        [req.body.reservationId, req.body.reservationId,  req.body.newstartdate, req.body.newenddate, req.body.newstartdate, req.body.newenddate, req.body.newstartdate, req.body.newenddate,req.body.reservationId], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
                 res.json(result);
@@ -333,8 +355,8 @@ app.post('/retrieveUpdatedReservation',function(req,res) {
 //
 app.post('/updateReservation',function(req,res) {
     var result = { "Data":"", "Success": false}; //if not returning rows use this
-    connection.query("UPDATE RESERVATION SET Start_date=?, End_date=? WHERE Reservation_id=?",
-        [req.body.Startdate, req.body.Enddate, req.body.Reservationid], function(err, rows, fields){
+    connection.query("UPDATE RESERVATION SET Start_date=?, End_date=? Total_cost=? WHERE Reservation_id=?",
+        [req.body.Startdate, req.body.Enddate, req.body.Totalcost,req.body.Reservationid], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
             } else {
@@ -391,7 +413,7 @@ app.post('/reservationreport',function(req,res) {
 
 
     //some sql query question marks are replaced [somevar1,somevar2] respectively
-    connection.query("SELECT t2.Location,COUNT(DISTINCT t1.Reservation_id) as Count FROM (SELECT * FROM RESERVATION Where MONTH(RESERVATION.Start_date) = 11) as t1, (SELECT * FROM RESERVATION_ROOM) as t2 WHERE t1.Reservation_id = t2.Reservation_id GROUP BY t2.Location",
+    connection.query("SELECT t2.Location,COUNT(DISTINCT t1.Reservation_id) as Count FROM (SELECT * FROM RESERVATION Where MONTH(RESERVATION.Start_date) = 8 AND RESERVATION.Is_cancelled = 0) as t1, (SELECT * FROM RESERVATION_ROOM) as t2 WHERE t1.Reservation_id = t2.Reservation_id GROUP BY t2.Location",
         [], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
@@ -402,7 +424,7 @@ app.post('/reservationreport',function(req,res) {
                 result["August"] = rows;
             }
         });
-    connection.query("SELECT t2.Location,COUNT(DISTINCT t1.Reservation_id) AS Count FROM (SELECT * FROM RESERVATION Where MONTH(RESERVATION.Start_date) = 9) as t1, (SELECT * FROM RESERVATION_ROOM) as t2 WHERE t1.Reservation_id = t2.Reservation_id GROUP BY t2.Location",
+    connection.query("SELECT t2.Location,COUNT(DISTINCT t1.Reservation_id) AS Count FROM (SELECT * FROM RESERVATION Where MONTH(RESERVATION.Start_date) = 9 AND RESERVATION.Is_cancelled = 0) as t1, (SELECT * FROM RESERVATION_ROOM) as t2 WHERE t1.Reservation_id = t2.Reservation_id GROUP BY t2.Location",
         [], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
@@ -422,7 +444,7 @@ app.post('/revenuereport',function(req,res) {
 
 
     //some sql query question marks are replaced [somevar1,somevar2] respectively
-    connection.query("SELECT t3.Location as Location,SUM(t3.Cost) as Cost FROM (SELECT t2.Location,t1.Reservation_id,t1.Total_cost as Cost FROM (SELECT * FROM RESERVATION Where MONTH(RESERVATION.Start_date) = 11) as t1, (SELECT * FROM RESERVATION_ROOM) as t2 WHERE t1.Reservation_id = t2.Reservation_id GROUP BY t1.Reservation_id) as t3 GROUP BY t3.Location",
+    connection.query("SELECT t3.Location as Location,SUM(t3.Cost) as Cost FROM (SELECT t2.Location,t1.Reservation_id,t1.Total_cost as Cost FROM (SELECT * FROM RESERVATION Where MONTH(RESERVATION.Start_date) = 8) as t1, (SELECT * FROM RESERVATION_ROOM) as t2 WHERE t1.Reservation_id = t2.Reservation_id GROUP BY t1.Reservation_id) as t3 GROUP BY t3.Location",
         [], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
@@ -447,6 +469,26 @@ app.post('/revenuereport',function(req,res) {
             });
 });
 
+
+app.post('/popularreport',function(req,res) {
+    var result = { "August":[], "Success":false}; //if not returning rows use this
+
+
+    //some sql query question marks are replaced [somevar1,somevar2] respectively
+    connection.query("SELECT t5.*,MAX(t5.Count) AS Max FROM (SELECT t3.*,t4.Room_category,COUNT(t4.Room_category) AS Count FROM (SELECT t1.Reservation_id,t2.Location,t2.Room_no FROM (SELECT * FROM RESERVATION Where MONTH(RESERVATION.Start_date) = 8 AND RESERVATION.Is_cancelled = 0) as t1, (SELECT * FROM RESERVATION_ROOM) as t2 WHERE t1.Reservation_id = t2.Reservation_id) as t3 ,(SELECT * FROM ROOM) as t4 WHERE t3.Location = t4.Location AND t3.Room_no = t4.Room_no GROUP BY Room_category,Location ORDER BY Count DESC) as t5 GROUP BY t5.Location",
+        [], function(err, rows, fields){
+            if(err) {
+                console.error('bad query: ' + err.stack);
+                res.json(result);
+            } else {
+                console.log("Got AUGUST", rows);
+                result["Success"] = true;
+                result["August"] = rows;
+                res.json(result);
+            }
+        });
+
+});
 
 // does not do anything probably remove this.
 app.get('/Mfunctionality', function(req,res) {

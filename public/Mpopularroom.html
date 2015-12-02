@@ -2,7 +2,25 @@
     <body>
         <div class="main-container container-fluid text-center" ng-controller="MpopularroomCtrl">
             <h1 class="bg-info">Popular Room-Category</h1>
+            <table class="table table-responsive table-hover table-striped">
+				<thead>
+					<tr>
+						<th>Month</th>
+						<th>Top room-category</th>
+						<th>Location</th>
+						<th>Total # reservations for room category</th>
 
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="entry in data">
+						<td>{{entry.month}}</td>
+						<td>{{entry.type}}</td>
+						<td>{{entry.location}}</td>
+						<td>{{entry.total}}</td>
+					</tr>
+				</tbody>
+			</table>
 
         </div>
     </body>
