@@ -329,10 +329,10 @@ app.post('/retrieveUpdatedReservation',function(req,res) {
         +"(SELECT COUNT(*) "
         +"FROM RESERVATION_ROOM AS rr NATURAL JOIN RESERVATION AS r  "
         +"WHERE r.Reservation_id = ?), "
-        +"48, "
+        +"?, "
         +"NULL "
     +")) ",
-        [req.body.reservationId, req.body.reservationId,  req.body.newstartdate, req.body.newenddate, req.body.newstartdate, req.body.newenddate, req.body.newstartdate, req.body.newenddate,req.body.reservationId], function(err, rows, fields){
+        [req.body.reservationId, req.body.reservationId,  req.body.newstartdate, req.body.newenddate, req.body.newstartdate, req.body.newenddate, req.body.newstartdate, req.body.newenddate,req.body.reservationId,req.body.reservationId], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
                 res.json(result);
@@ -375,7 +375,7 @@ app.post('/cancelReservationRoomRetrieval',function(req,res) {
 
     //some sql query question marks are replaced [somevar1,somevar2] respectively
     connection.query("SELECT * FROM RESERVATION_ROOM NATURAL JOIN RESERVATION NATURAL JOIN ROOM WHERE Reservation_id =  ?",
-        [req.body.reservationId], function(err, rows, fields){
+        [req.body.ReservationId], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
                 res.json(result);
