@@ -375,7 +375,7 @@ app.post('/cancelReservationRoomRetrieval',function(req,res) {
 
     //some sql query question marks are replaced [somevar1,somevar2] respectively
     connection.query("SELECT * FROM RESERVATION_ROOM NATURAL JOIN RESERVATION NATURAL JOIN ROOM WHERE Reservation_id =  ?",
-        [req.body.ReservationId], function(err, rows, fields){
+        [req.body.reservationId], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
                 res.json(result);
@@ -397,7 +397,7 @@ app.post('/cancelReservationRoomMarkCancelled',function(req,res) {
     var result = { "Data":[], "Success":false}; //if not returning rows use this
 
     connection.query("UPDATE RESERVATION SET Is_cancelled = true WHERE Reservation_id =  ?",
-        [req.body.reservationId], function(err, rows, fields){
+        [req.body.ReservationId], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
                 res.json(result);
