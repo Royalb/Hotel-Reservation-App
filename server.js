@@ -395,9 +395,10 @@ app.post('/cancelReservationRoomRetrieval',function(req,res) {
 // MARK ROOM RESERVATION QUERY
 app.post('/cancelReservationRoomMarkCancelled',function(req,res) {
     var result = { "Data":[], "Success":false}; //if not returning rows use this
-
-    connection.query("UPDATE RESERVATION SET Is_cancelled = true WHERE Reservation_id =  ?",
-        [req.body.ReservationId], function(err, rows, fields){
+    console.log(req.body.ReservationId);
+    console.log(req.body.NewCost);
+    connection.query("UPDATE RESERVATION SET Is_cancelled = true, Total_cost=? WHERE Reservation_id=?",
+        [req.body.NewCost,req.body.ReservationId], function(err, rows, fields){
             if(err) {
                 console.error('bad query: ' + err.stack);
                 res.json(result);

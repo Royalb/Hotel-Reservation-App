@@ -320,7 +320,7 @@ function SearchroomsCtrl($scope, $http, availableroomsService) {
         }
         if ($scope.startdate < $scope.curdate) {
             $scope.message = "Can not choose dates in the past";
-            return;
+            //return;
         }
         var body = {
             "Startdate":$scope.startdate.toISOString().substr(0,10),
@@ -433,7 +433,7 @@ function MakereservationCtrl($scope, $http, availableroomsService, reservedRooms
         }
         if ($scope.startdate < $scope.curdate) {
             $scope.message = "Can not choose dates in the past";
-            return;
+            //return;
         }
 
         if ($scope.selectedCard == "") {
@@ -631,7 +631,7 @@ function UpdatereservationCtrl($scope, $http, mainPageMessageService) {
         }
         if ($scope.newstartdate < $scope.curdate) {
             $scope.roomLookupMessage = "Can not choose dates in the past";
-            return;
+            //return;
         }
 
         var body = {
@@ -766,9 +766,13 @@ function CancelreservationCtrl($scope, $http) {
         });
 
     };
-
     $scope.cancelReservation = function() {
+    $scope.newcost = $scope.totalcost - $scope.calculateRefundCost()
+    console.log("NewCOSt:",$scope.newcost);
+        console.log("caneling");
+        console.log($scope.reservationId);
         var body = {
+            "NewCost": $scope.newcost,
             "ReservationId": $scope.reservationId
         };
 
